@@ -5,5 +5,7 @@
     <Transaction>1899.12.30 00:00:00.000.040,D:\Триггеры\Delphi\Project2.dproj=D:\Триггеры\Delphi\term_2\togetherWork\togetherWork.dproj</Transaction>
     <Transaction>1899.12.30 00:00:00.000.704,=D:\Триггеры\Delphi\Unit1.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.411,D:\Триггеры\Delphi\Unit1.pas=D:\Триггеры\Delphi\term_2\togetherWork\HumanSet.pas</Transaction>
+    <Transaction>2022.04.21 21:12:27.132,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>2022.04.21 21:18:57.500,D:\Триггеры\Delphi\term_2\togetherWork\LimbSet.pas=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
   </Transactions>
 </BorlandProject>

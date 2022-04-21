@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math;
+  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet;
 
 type
   TFrames = class(TForm)
@@ -26,60 +26,7 @@ type
     startValue, finalValue: Real;
   end;
 
-  TLimb = class
-    procedure draw(const Canvas: TCanvas); virtual;
-    procedure setPos(const X, Y: Integer); virtual;
-    procedure setScale(const scale: Real); virtual;
-    procedure setAngle(const angle: Real); virtual;
-    procedure change(const startAngle, finalAngle, tick: Real);
-    constructor Create(const angle: Real; const X, Y: Integer); overload;
-  protected
-    angle: Real;
-    anchorX, anchorY: Integer;
-    Len: Integer;
-    scale: Real;
-  end;
 
-  TArm = class(TLimb)
-    procedure draw(const Canvas: TCanvas); override;
-    procedure setPos(const X, Y: Integer); override;
-    procedure setAngle(const angle: Real); override;
-    procedure setElbow(const angle: Real);
-    procedure setWrist(const angle: Real);
-    procedure setScale(const scale: Real); override;
-    constructor Create(const angle: Real; const X, Y: Integer); overload;
-
-  private
-    wristX, wristY: Integer;
-    elBowX, elBowY: Integer;
-    fingerX, fingerY: Integer;
-    foreArmLen, handLen: Integer;
-    elbowAngle, wristAngle: Real;
-    const
-      defArmLen = 30;
-      defSecondLen = 20;
-      defHandLen = 10;
-  end;
-
-  TLeg = class(TLimb)
-    procedure draw(const Canvas: TCanvas); override;
-    procedure setPos(const X, Y: Integer); override;
-    procedure setAngle(const angle: Real); override;
-    procedure setKnee(const angle: Real);
-    procedure setScale(const scale: Real); override;
-    constructor Create(const angle: Real; const X, Y: Integer); overload;
-
-  private
-    anchorX, anchorY: Integer;
-    kneeX, kneeY: Integer;
-    feetX, feetY: Integer;
-    shinLen: Integer;
-    kneeAngle: Real;
-    dirForward: Boolean;
-    const
-      defLegLen = 40;
-      defSecondLen = 30;
-  end;
 
   TCharachter = class
     procedure draw(const Canvas: TCanvas);
@@ -89,7 +36,7 @@ type
   public
     leftArm, rightArm: TArm;
     leftLeg, rightLeg: TLeg;
-    body, header: TLimb;
+    body, head: TLimb;
   private
     neckX, neckY: Integer;
     bodyLen: Integer;
@@ -99,6 +46,7 @@ type
       defArmAngle = Pi / 4;
       defLegAngle = Pi / 8;
       defBodyLen = 50;
+    property nextPos: Integer read bodyLen;
   end;
 
   TAnimationAction = procedure(var hero: TCharachter);
@@ -126,46 +74,7 @@ var
 implementation
 {$R *.dfm}
 
-constructor TLimb.Create(const angle: Real; const X, Y: Integer);
-begin
-  self := TLimb.Create;
-  anchorX := X;
-  anchorY := Y;
-  setAngle(angle);
-  scale := 1;
-end;
 
-procedure TLimb.draw(const Canvas: TCanvas);
-begin
-  with Canvas do
-  begin
-    MoveTo(anchorX, anchorY);
-    LineTo(anchorX + Round(sin(angle) * Len), anchorY + Round(cos(angle) + Len));
-  end;
-end;
-
-procedure TLimb.change(const startAngle: Real; const finalAngle: Real; const tick: Real);
-begin
-  self.angle := (startAngle - (startAngle - finalAngle) * tick);
-  setAngle(angle);
-end;
-
-procedure TLimb.setPos(const X: Integer; const Y: Integer);
-begin
-  anchorX := X;
-  anchorY := Y;
-end;
-
-procedure TLimb.setAngle(const angle: Real);
-begin
-  self.angle := angle;
-end;
-
-procedure TLimb.setScale(const scale: Real);
-begin
-  Len := round(Len * scale / self.scale);
-  self.scale := scale;
-end;
 
 constructor TAnimation.Create(owner: TComponent);
 begin
@@ -193,36 +102,6 @@ begin
   end;
 end;
 
-constructor TLeg.Create(const angle: Real; const X, Y: Integer);
-begin
- // inherited Create(angle, X, Y);
-//  self:= inherited Create(angle, X, Y);
-  self := TLeg.Create;
-  self.angle := angle;
-  anchorX := X;
-  anchorY := Y;
-  scale := 1;
-  Len := defLegLen;
-  shinLen := defSecondLen;
-  setKnee(angle);
-  setAngle(angle);
-  dirForward := true;
-end;
-
-constructor TArm.Create(const angle: Real; const X, Y: Integer);
-begin
-  self := TArm.Create;
-  self.angle := angle;
-  anchorX := X;
-  anchorY := Y;
-  scale := 1;
-  Len := defArmLen;
-  foreArmLen := defSecondLen;
-  handLen := defHandLen;
-  setAngle(angle);
-  setElbow(angle);
-  setWrist(angle);
-end;
 
 constructor TCharachter.Create(const X, Y: Integer);
 begin
@@ -237,127 +116,10 @@ begin
   rightLeg := TLeg.Create(defLegAngle, X, Y + bodyLen);
 end;
 
-procedure TLeg.setAngle(const angle: Real);
-begin
-  kneeX := anchorX + Round(Len * sin(angle));
-  kneeY := anchorY + Round(Len * cos(angle));
-  self.angle := angle;
-
-  feetX := kneeX + Round(shinLen * sin(kneeAngle));
-  feetY := kneeY + Round(shinLen * cos(kneeAngle));
-end;
-
-procedure TLeg.setKnee(const angle: Real);
-begin
-  feetX := kneeX + Round(shinLen * sin(angle));
-  feetY := kneeY + Round(shinLen * cos(angle));
-  kneeAngle := angle;
-end;
-
-procedure TLeg.draw(const Canvas: TCanvas);
-begin
-  with Canvas do
-  begin
-    MoveTo(anchorX, anchorY);
-    LineTo(kneeX, kneeY);
-    LineTo(feetX, feetY);
-  end;
-end;
-
-procedure TLeg.setPos(const X: Integer; const Y: Integer);
-var
-  change: Integer;
-begin
-  change := X - anchorX;
-  inc(kneeX, change);
-  inc(feetX, change);
-  anchorX := X;
-  change := Y - anchorY;
-  inc(kneeX, change);
-  inc(feetX, change);
-  anchorY := Y;
-end;
-
-procedure TLeg.setScale(const scale: Real);
-begin
-  Len := Round(Len * scale / self.scale);
-  shinLen := Round(defSecondLen * scale / self.scale);
-  setAngle(angle);
-  setKnee(kneeAngle);
-end;
-
-procedure TArm.draw(const Canvas: TCanvas);
-begin
-  with Canvas do
-  begin
-    MoveTo(anchorX, anchorY);
-    LineTo(elBowX, elBowY);
-    LineTo(wristX, wristY);
-    LineTo(fingerX, fingerY);
-  end;
-end;
-
-procedure TArm.setPos(const X: Integer; const Y: Integer);
-var
-  change: Integer;
-begin
-  change := X - anchorX;
-  inc(elBowX, change);
-  inc(wristX, change);
-  inc(fingerX, change);
-  anchorX := X;
-  change := Y - anchorY;
-  inc(elBowY, change);
-  inc(wristY, change);
-  inc(fingerY, change);
-  anchorY := Y;
-end;
-
-procedure TArm.setAngle(const angle: Real);
-begin
-  elBowX := anchorX + Round(Len * sin(angle));
-  elBowY := anchorY + Round(Len * cos(angle));
-  elbowAngle := angle;
-
-  wristX := elBowX + Round(foreArmLen * sin(elbowAngle));
-  wristY := elBowY + Round(foreArmLen * cos(elbowAngle));
-
-  fingerX := wristX + Round(handLen * sin(wristAngle));
-  fingerY := wristY + Round(handLen * cos(wristAngle));
-end;
-
-procedure TArm.setElbow(const angle: Real);
-begin
-  wristX := elBowX + Round(foreArmLen * sin(angle));
-  wristY := elBowY + Round(foreArmLen * cos(angle));
-  wristAngle := angle;
-
-  fingerX := wristX + Round(handLen * sin(wristAngle));
-  fingerY := wristY + Round(handLen * cos(wristAngle));
-end;
-
-procedure TArm.setWrist(const angle: Real);
-begin
-  fingerX := wristX + Round(handLen * sin(angle));
-  fingerY := wristY + Round(handLen * cos(angle));
-  wristAngle := angle;
-end;
-
-procedure TArm.setScale(const scale: Real);
-begin
-  Len := Round(Len * scale / self.scale);
-  foreArmLen := Round(defSecondLen * scale / self.scale);
-  handLen := Round(defSecondLen * scale / self.scale);
-
-  setAngle(angle);
-  setElbow(elbowAngle);
-  setWrist(wristAngle);
-  self.scale := scale;
-end;
 
 procedure TCharachter.setScale(const scale: Real);
 begin
-  bodyLen := Round(scale * defBodyLen);
+  bodyLen := round(bodyLen * scale / self.scale);
   self.scale := scale;
   leftArm.setScale(scale);
   rightArm.setScale(scale);
@@ -403,7 +165,7 @@ const
   finishAngle = Pi / 5;
   startKneeAngle = -Pi / 6;
   middleKneeAngle = -Pi / 8;
-  middleReturnAngle = - Pi /6;
+  middleReturnAngle = -Pi / 6;
   finishKneeAngle = 0;
 begin
   with hero do
@@ -495,7 +257,7 @@ begin
 //      end;
 //
 //      end;
-  with leftLeg do
+    with leftLeg do
     begin
       if dirForward then
       begin
@@ -524,13 +286,14 @@ begin
 
     end;
 
-  end;
 
+  end;
+  var tempScale: Real:= 1.2;
+    hero.setScale(hero.scale + 0.008)
 end;
 
 procedure TFrames.FormCreate(Sender: TObject);
 begin
-
   tmrRender.Enabled := true;
   Canvas.Pen.Width := 3;
   Canvas.Pen.Color := clBlack;

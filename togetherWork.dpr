@@ -2,7 +2,8 @@ program togetherWork;
 
 uses
   Vcl.Forms,
-  HumanSet in 'HumanSet.pas' {Frames};
+  HumanSet in 'HumanSet.pas' {Frames},
+  LimbSet in 'LimbSet.pas';
 
 {$R *.res}
 

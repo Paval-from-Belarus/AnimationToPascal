@@ -12,7 +12,6 @@ object Frames: TFrames
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
-  OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
   object imgMap: TImage

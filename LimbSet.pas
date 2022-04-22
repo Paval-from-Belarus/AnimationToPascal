@@ -19,11 +19,14 @@ type
     procedure setScale(const scale: Real); virtual;
     procedure setAngle(const angle: Real); virtual;
     constructor Create(const angle: Real; const X, Y: Integer; const Len: Integer);
+  public
+    Len: Integer;
   protected
     angle: Real;
     anrX, anrY: Integer;
-    Len: Integer;
     scale: Real;
+    property X: Integer read anrX;
+    property Y: Integer read anrY;
   end;
 
   TArmOrientation = record
@@ -56,18 +59,20 @@ type
   private
     shin, feet: TLimb;
     feetX, feetY: Integer;
-  //  procedure setOrient(const savedPos: TLegOrientation);
-//    function getOrient: TLegOrientation;
+    procedure setOrient(const savedPos: TLegOrientation);
+    function getOrient: TLegOrientation;
   public
-    dirForward: Boolean;
     procedure draw(const Canvas: TCanvas); override;
     procedure setPos(const X, Y: Integer); override;
     procedure setAngle(const angle: Real); override;
     procedure setKnee(const angle: Real);
     procedure setScale(const scale: Real); override;
     constructor Create(const angle: Real; const X, Y: Integer); overload;
- //   property Orient: TLegOrientation read getOrient write setOrient;
+    property Orient: TLegOrientation read getOrient write setOrient;
+  end;
 
+  THead = class(TLimb)
+    procedure draw(const Canvas: TCanvas); override;
   end;
 
 implementation
@@ -86,7 +91,7 @@ begin
   with Canvas do
   begin
     MoveTo(anrX, anrY);
-    LineTo(anrX + Round(sin(angle) * Len), anrY + Round(cos(angle) + Len));
+    LineTo(anrX + Round(sin(angle) * Len), anrY + Round(cos(angle) * Len));
   end;
 end;
 
@@ -102,12 +107,14 @@ begin
 end;
 
 procedure TLimb.setScale(const scale: Real);
-var tempLen: Integer;
+var
+  tempLen: Integer;
 begin
-  tempLen:= round(Len * scale / self.scale);
-  if tempLen <> Len then begin
-  self.scale := scale;
-  Len:= tempLen;
+  tempLen := round(Len * scale / self.scale);
+  if tempLen <> Len then
+  begin
+    self.scale := scale;
+    Len := tempLen;
   end;
 end;
 
@@ -200,7 +207,6 @@ constructor TLeg.Create(const angle: Real; const X, Y: Integer);
 begin
   shin := TLimb.Create(angle, X, Y, defShinLen);
   inherited Create(angle, X, Y, defLegLen);
-  dirForward := true;
 end;
 
 procedure TLeg.setAngle(const angle: Real);
@@ -247,6 +253,31 @@ begin
   shin.setScale(scale);
   setAngle(angle);
 //  shin.setAngle(shin.angle)
+end;
+
+procedure TLeg.setOrient(const savedPos: TLegOrientation);
+begin
+  setAngle(savedPos.legAngle);
+  setKnee(savedPos.kneeAngle);
+end;
+
+function TLeg.getOrient: TLegOrientation;
+begin
+  Result.legAngle := angle;
+  Result.kneeAngle := shin.angle;
+end;
+
+procedure THead.draw(const Canvas: TCanvas);
+var centerX, centerY: Integer;
+begin
+  with Canvas do
+    begin
+      centerX:= Round( anrX + (Len / 2) * sin (angle));
+      centerY := Round(anrY + (Len / 2) * cos(angle) );
+
+      Ellipse(centerX - round(Len / 2), centerY - round(Len / 2),
+              centerX + round(Len / 2), centerY + round(Len / 2));
+    end;
 end;
 
 end.

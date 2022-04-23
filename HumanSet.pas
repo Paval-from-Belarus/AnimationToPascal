@@ -16,7 +16,7 @@ type
   public
     leftArm, rightArm: TArm;
     leftLeg, rightLeg: TLeg;
-    body, neck: TLimb;
+    body: TLimb;
     head: THead;
   private
     neckX, neckY: Integer;
@@ -28,7 +28,7 @@ type
       defLegAngle = Pi / 8;
       defBodyLen = 50;
       defNeckLen = 7;
-      defHeadSize = 30;
+      defHeadSize = 15;
     property nextPos: Integer read bodyLen;
 
   end;
@@ -57,6 +57,7 @@ type
   private
     anmWalk: TAnimation;
     anmPlay: TAnimation;
+    anmTremor: TAnimation;
     mainHero: TCharachter;
   public
   end;
@@ -93,8 +94,7 @@ begin
   RightArm := TArm.Create(defArmAngle, X, Y);
   leftLeg := TLeg.Create(-defLegAngle, X, Y + bodyLen);
   rightLeg := TLeg.Create(defLegAngle, X, Y + bodyLen);
-  neck :=  TLimb.Create(Pi, X, Y, defNeckLen);
-  head := THead.Create(Pi, X, Y - neck.Len, defHeadSize);
+  head := THead.Create(X, Y, defNeckLen, defHeadSize);
   body := TLimb.Create(0, X, Y, defBodyLen);
 end;
 
@@ -106,14 +106,12 @@ begin
   rightArm.setScale(scale);
   leftLeg.setScale(scale);
   rightLeg.setScale(scale);
-  neck.setScale(scale);
   head.setScale(scale);
 end;
 
 procedure TCharachter.setPos(const X: Integer; const Y: Integer);
 begin
-  neck.setPos(X, Y);
-  head.setPos(X + neck.Len, Y + neck.Len);
+  head.setPos(X, Y);
   leftArm.setPos(X, Y);
   rightArm.setPos(X, Y);
   leftLeg.setPos(X, Y + bodyLen);
@@ -128,7 +126,6 @@ begin
   with Canvas do
   begin
     head.draw(Canvas);
-    neck.draw(Canvas);
     body.draw(Canvas);
     leftArm.draw(Canvas);
     rightArm.draw(Canvas);
@@ -141,84 +138,114 @@ function getChanged(const startPos, endPos: TLegOrientation; tick: Real): TLegOr
 begin
   Result.legAngle := (startPos.legAngle - (startPos.legAngle - endPos.legAngle) * tick);
   Result.kneeAngle := (startPos.kneeAngle - (startPos.kneeAngle - endPos.kneeAngle) * tick);
+  Result.ankleAngle := (startPos.ankleAngle - (startPos.ankleAngle - endPos.ankleAngle) * tick);
 end;
+
 function getChanged(const startPos, endPos: Real; tick: Real): Real; overload;
 begin
-  Result:= (startPos - (startPos - endPos) * tick);
+  Result := (startPos - (startPos - endPos) * tick);
 end;
 
 procedure tremor(var stage: Integer; var tick: Real; var hero: TCharachter);
+const
+  startWrist = 0;
+  endWrist = Pi / 2 + Pi / 6;
+  startHead = Pi / 12 + Pi;
+  endHead = Pi - Pi / 12;
+  armOrient: TArmOrientation =
+  (armAngle: -Pi / 4;
+   elBowAngle: Pi /3 + Pi /12;
+   wristAngle:  Pi / 12);
+
 begin
+  with hero do
+    if stage = 0 then
+    begin
+      leftArm.setWrist(getChanged(startWrist, endWrist, tick));
+      head.setAngle(getChanged(startHead, endHead, tick));
+    end
+    else
+    begin
+
+      leftArm.setWrist(getChanged(endWrist, startWrist, tick));
+      head.setAngle(getChanged(endHead, startHead, tick));
+    end;
+        if tick > 1 then
+        begin
+          tick:= 0;
+          if stage = 0 then
+            stage:= 1 else stage:= 0;
+        end else tick:= tick + 0.1;
 
 end;
+
 procedure play(var stage: Integer; var tick: Real; var hero: TCharachter);
 const
- startWrist =  0;
- endWrist = Pi / 2 + Pi / 6;
- speedWrist = 0.1;
+  speedWrist = 0.02;
 begin
-with hero do
+  with hero do
   begin
-          rightArm.setElbow(Pi / 2 + Pi / 3);
-          leftArm.setElbow(Pi / 2 - Pi / 6);
-          leftArm.setAngle(- Pi / 4);
-    if stage = 0 then
-      begin
-        rightArm.setAngle(Pi / 3);
-        leftArm.setWrist( getChanged(startWrist, endWrist, tick) );
-      end else
-      begin
-              rightArm.setAngle(Pi / 6);
-              leftArm.setWrist( getChanged(endWrist, startWrist, tick) );
+    rightArm.setElbow(Pi / 2 + Pi / 3);
+    leftArm.setElbow(Pi / 2 - Pi / 6);
+    leftArm.setAngle(-Pi / 4);
+    case stage of
+      0: begin
+       rightArm.setAngle(Pi / 3);
       end;
-      if tick > 1 then begin
-        if stage = 1 then
-        stage:= 0 else stage:= 1;
-        tick:= 0;
+      1: begin
+       rightArm.setAngle(Pi / 6);
       end;
-      tick:= tick + speedWrist;
+      2: begin
+      rightArm.setAngle(Pi / 4);
+      end;
+    end;
+
+    if tick > 1 then
+    begin
+      stage:= Random(3);
+      tick := 0;
+    end;
+    tick := tick + speedWrist;
   end;
 end;
+
 procedure walk(var stage: Integer; var tick: Real; var hero: TCharachter);
 const
   maxStage = 3;
-  limitAngle = Pi / 5;
-  forwardSpeed = 0.02;
-  kneeSpeed = 0.025;
-  feetSpeed = 0.02;
-  startAngle = -Pi / 8;
-  middleAngle = Pi / 12;
-  finishAngle = Pi / 5;
-  startKneeAngle = -Pi / 6;
-  middleKneeAngle = -Pi / 8;
-  middleReturnAngle = -Pi / 6;
-  finishKneeAngle = 0;
 const
   leftLegOrient: array[0..3] of TLegOrientation = ((
     legAngle: -Pi / 4;
     kneeAngle: (-60 / 180) * Pi;
+    ankleAngle: Pi / 6;
   ), (
     legAngle: -Pi / 9;
     kneeAngle: -Pi / 3;
+    ankleAngle: Pi / 18
   ), (
     legAngle: Pi / 12;
-    kneeAngle: (-11 / 180) * Pi
+    kneeAngle: (-11 / 180) * Pi;
+    ankleAngle: Pi / 3;
   ), (
     legAngle: Pi / 6;
     kneeAngle: (25 / 180) * Pi;
+    ankleAngle: (Pi / 2 + Pi / 12);
   ));
   rightLegOrient: array[0..3] of TLegOrientation = ((
     legAngle: Pi / 6;
     kneeAngle: (25 / 180) * Pi;
+    ankleAngle: (Pi / 2 + Pi / 12);
   ), (
     legAngle: Pi / 12;
     kneeAngle: (-11 / 180) * Pi;
+    ankleAngle: Pi / 3;
   ), (
     legAngle: -Pi / 9;
     kneeAngle: -Pi / 3;
+    ankleAngle: Pi / 18
   ), (
     legAngle: -Pi / 4;
     kneeAngle: -Pi / 3;
+    ankleAngle: Pi / 6;
   ));
 begin
   with hero do
@@ -247,12 +274,14 @@ begin
   mainHero := TCharachter.Create(200, 200);
   anmWalk := TAnimation.Create(mainHero, walk);
   anmPlay := TAnimation.Create(mainHero, play);
+  anmTremor := TAnimation.Create(mainHero, tremor);
 end;
 
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
 begin
   anmWalk.update;
   anmPlay.update;
+  anmTremor.update;
   mainHero.draw(self.Canvas);
 end;
 

@@ -11,6 +11,7 @@ const
   defArmLen = 30;
   defForeArmLen = 20;
   defHandLen = 10;
+  defFeetLen = 13;
 
 type
   TLimb = class
@@ -34,7 +35,7 @@ type
   end;
 
   TLegOrientation = record
-    legAngle, kneeAngle: Real;
+    legAngle, kneeAngle, ankleAngle: Real;
   end;
 
   TArm = class(TLimb)
@@ -55,10 +56,8 @@ type
     property Orient: TArmOrientation read getOrient write setOrient;
   end;
 
-  TLeg = class(TLimb)
+  TLeg = class(TArm)
   private
-    shin, feet: TLimb;
-    feetX, feetY: Integer;
     procedure setOrient(const savedPos: TLegOrientation);
     function getOrient: TLegOrientation;
   public
@@ -66,6 +65,7 @@ type
     procedure setPos(const X, Y: Integer); override;
     procedure setAngle(const angle: Real); override;
     procedure setKnee(const angle: Real);
+    procedure setAnkle(const angle: Real);
     procedure setScale(const scale: Real); override;
     constructor Create(const angle: Real; const X, Y: Integer); overload;
     property Orient: TLegOrientation read getOrient write setOrient;
@@ -73,6 +73,10 @@ type
 
   THead = class(TLimb)
     procedure draw(const Canvas: TCanvas); override;
+    procedure setScale(const scale: Real); override;
+    constructor Create(const X, Y: Integer; const neckLen, radius: Integer);
+  private
+    radius: Integer;
   end;
 
 implementation
@@ -125,7 +129,6 @@ begin
   foreArm := TLimb.Create(angle, X, Y, defforeArmLen);
   hand := TLimb.Create(angle, X, Y, defHandLen);
   inherited Create(angle, X, Y, defArmLen);
-
 end;
 
 procedure TArm.draw(const Canvas: TCanvas);
@@ -182,7 +185,6 @@ begin
   inherited setScale(scale);
   foreArm.setScale(scale);
   hand.setScale(scale);
-
   setAngle(angle);
   setElbow(foreArm.angle);
   //  setWrist(wristAngle);
@@ -205,80 +207,85 @@ end;
 
 constructor TLeg.Create(const angle: Real; const X, Y: Integer);
 begin
-  shin := TLimb.Create(angle, X, Y, defShinLen);
-  inherited Create(angle, X, Y, defLegLen);
+  inherited Create(angle, X, Y);
+  self.Len := defLegLen;
+  foreArm.Len:= defShinLen;
+  hand.Len := defFeetLen;
+  hand.setAngle(Pi / 2);
+  setAngle(angle);
 end;
 
 procedure TLeg.setAngle(const angle: Real);
 begin
-  shin.anrX := anrX + Round(Len * sin(angle));
-  shin.anrY := anrY + Round(Len * cos(angle));
-  self.angle := angle;
-
-  setKnee(shin.angle);
+inherited setAngle(angle);
 end;
 
 procedure TLeg.setKnee(const angle: Real);
 begin
-  feetX := shin.anrX + Round(shin.Len * sin(angle));
-  feetY := shin.anrY + Round(shin.Len * cos(angle));
-  shin.setAngle(angle)
+inherited setElbow(angle);
+end;
+
+procedure TLeg.setAnkle(const angle: Real);
+begin
+  inherited setWrist(angle);
 end;
 
 procedure TLeg.draw(const Canvas: TCanvas);
 begin
-  with Canvas do
-  begin
-    MoveTo(anrX, anrY);
-    LineTo(shin.anrX, shin.anrY);
-    LineTo(feetX, feetY);
-  end;
+  inherited draw(canvas);
 end;
 
 procedure TLeg.setPos(const X: Integer; const Y: Integer);
-var
-  changeX, changeY: Integer;
 begin
-  changeX := X - anrX;
-  changeY := Y - anrY;
-  shin.setPos(shin.anrX + changeX, shin.anrY + changeY);
-  inc(feetX, changeX);
-  inc(feetX, changeY);
   inherited setPos(X, Y);
 end;
 
 procedure TLeg.setScale(const scale: Real);
 begin
   inherited setScale(scale);
-  shin.setScale(scale);
-  setAngle(angle);
-//  shin.setAngle(shin.angle)
 end;
 
 procedure TLeg.setOrient(const savedPos: TLegOrientation);
 begin
-  setAngle(savedPos.legAngle);
-  setKnee(savedPos.kneeAngle);
+    inherited setOrient(TArmOrientation(savedPos));
 end;
 
 function TLeg.getOrient: TLegOrientation;
 begin
-  Result.legAngle := angle;
-  Result.kneeAngle := shin.angle;
+    Result:= TLegOrientation(inherited getOrient);
+end;
+
+// head implementation
+constructor THead.Create(const X: Integer; const Y: Integer; const neckLen: Integer; const radius: Integer);
+begin
+  anrX := X;
+  anrY := Y;
+  Len := neckLen;
+  self.radius := radius;
+  angle := Pi;
+  scale := 1;
 end;
 
 procedure THead.draw(const Canvas: TCanvas);
-var centerX, centerY: Integer;
+var
+  centerX, centerY: Integer;
 begin
-  with Canvas do
-    begin
-      centerX:= Round( anrX + (Len / 2) * sin (angle));
-      centerY := Round(anrY + (Len / 2) * cos(angle) );
-
-      Ellipse(centerX - round(Len / 2), centerY - round(Len / 2),
-              centerX + round(Len / 2), centerY + round(Len / 2));
-    end;
+  inherited Draw(Canvas);
+  centerX := Round(anrX + (Len + radius) * sin(angle));
+  centerY := Round(anrY + (Len + radius) * cos(angle));
+  Canvas.Ellipse(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
 end;
 
+procedure THead.setScale(const scale: Real);
+var tempRadius: Integer;
+begin
+  inherited setScale(scale);
+   tempRadius:= Round(radius * scale / self.scale);
+   if tempRadius <> radius then
+      begin
+        self.scale:= scale;
+        radius:= tempRadius;
+      end;
+end;
 end.
 

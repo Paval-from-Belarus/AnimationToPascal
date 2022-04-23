@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math;
+  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, GuitarObject;
 
 type
   TFrames = class(TForm)
@@ -119,6 +119,7 @@ type
 var
   Frames: TFrames;
   mainHero: TCharachter;
+  guitar  : TGuitar;
   animationSet: TAnimation;
   tick: Real;
   stage: Integer;
@@ -535,7 +536,9 @@ begin
   Canvas.Pen.Width := 3;
   Canvas.Pen.Color := clBlack;
   mainHero := TCharachter.Create(200, 200);
-
+  guitar   := TGuitar.Create(400, 400);
+  guitar.PRotPoint := Point (400, 400);
+  guitar.PAngle := 0;
   animationSet := TAnimation.Create(Frames);
   stage := 1;
   animationSet.action := walk;
@@ -557,6 +560,7 @@ end;
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
 begin
   mainHero.draw(self.Canvas);
+  guitar.Draw(self.Canvas, pmCopy);
 end;
 
 procedure TFrames.tmrRenderTimer(Sender: TObject);
@@ -566,6 +570,7 @@ begin
 //    animationSet.stop
 //  else
   mainHero.setPos(mainHero.neckX + 1, mainHero.neckY);
+  guitar.PAngle := guitar.PAngle - 0.1;
   pbDrawGrid.Repaint;
 //Canvas.Pen.Mode := pmNotXor;
 //angle:= angle + 0.5;

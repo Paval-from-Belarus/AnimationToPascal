@@ -9,13 +9,13 @@ type
     x, y        : integer;
     round_point : TPoint;
     angle       : real;
+     procedure   Set_Angle         (const Alpha : Real);   function    Get_Angle         : Real;
+     procedure   Set_RotatingPoint (const pnt : TPoint);   function    Get_RotatingPoint : Tpoint;
   public
-    procedure   Set_Angle         (const Alpha : Real);   function    Get_Angle         : Real;
-    procedure   Set_RotatingPoint (const pnt : TPoint);   function    Get_RotatingPoint : Tpoint;
     constructor Create (const x,  y : integer) overload;
-    procedure   Draw   (const Canvas: TCanvas; const mode : TPenMode);
+    procedure   Draw   (const Canvas: TCanvas);
     procedure   RotateRectangle (const x1, y1, x3, y3 : integer; const angle : real; const rot_point : TPoint; const Canvas : TCanvas);
-    procedure   RotatedEllipse  (cx, cy, a, b    : integer; angle : real; const rot_point : TPoint; const Canvas : TCanvas);
+    class procedure   RotatedEllipse  (cx, cy, a, b    : integer; angle : real; const rot_point : TPoint; const Canvas : TCanvas);
     procedure   Circle          (const rad, x, y : integer; const Canvas : TCanvas);
   published
     property    PRotPoint      : Tpoint read Get_RotatingPoint write Set_RotatingPoint;
@@ -85,13 +85,10 @@ procedure   TGuitar.RotateRectangle (const x1, y1, x3, y3 : integer; const angle
    end;
 
 
-procedure   TGuitar.Draw (const Canvas: TCanvas; const mode : TPenMode);
+procedure   TGuitar.Draw (const Canvas: TCanvas);
     var
         w_1, w_2, w_g, w_c, h_1, h_2, h_g, h_c: integer;
-        round_point : TPoint;
-        angle       : real;
     begin
-        Canvas.Pen.Mode := mode;
 
         w_1    :=  Round (0.33*size_width);
         w_2    :=  Round (0.17*size_width);
@@ -102,9 +99,6 @@ procedure   TGuitar.Draw (const Canvas: TCanvas; const mode : TPenMode);
         h_2  :=  Round (0.8*size_heigh);
         h_g  :=  Round (0.04*size_heigh);
         h_c  :=  Round (0.08*size_heigh);
-
-        round_point := self.PRotPoint;
-        angle       := self.PAngle;
 
         Canvas.Pen.Width := 3;
         Canvas.Pen.Color    := $00000040;
@@ -123,14 +117,14 @@ procedure   TGuitar.Draw (const Canvas: TCanvas; const mode : TPenMode);
         RotatedEllipse(x - w_2 div 2 - Round (0.45 *w_1),  y, Round(0.15*h_1), Round(0.15*h_1), angle, round_point, Canvas);
     end;
 
-procedure   TGuitar.RotatedEllipse ( cx, cy, a, b   : integer; angle : real; const rot_point : TPoint; const Canvas : TCanvas);
+class procedure   TGuitar.RotatedEllipse (cx, cy, a, b   : integer; angle : real; const rot_point : TPoint; const Canvas : TCanvas);
     const
         MP = 0.55228475;
     var
         rot_x, rot_y                   : integer;
-        x1, x2, x3, x4, y1, y2, y3, y4 : integer;
-        xx1, xx2, xx3, xx4             : integer;
-        yy1, yy2, yy3, yy4             : integer;
+        x1, x3, y1, y3: integer;
+        xx1, xx3            : integer;
+        yy1, yy3            : integer;
 
         CA, SA, ACA, ASA, BCA, BSA     : Double;
         i, CX2, CY2                    : Integer;
@@ -147,13 +141,9 @@ function TransformPoint(X, Y: Double): TPoint;
         x3 := cx - a div 2;
         y1 := cy + b div 2;
         y3 := cy - b div 2;
-        x2 := x3;  x4 := x1;
-        y2 := y1;  y4 := y3;
 
         xx1 := Convert_x (x1, y1, rot_x, rot_y, angle) + rot_x;     yy1 := Convert_y (x1, y1, rot_x, rot_y, angle) + rot_y;
-        xx2 := Convert_x (x2, y2, rot_x, rot_y, angle) + rot_x;     yy2 := Convert_y (x2, y2, rot_x, rot_y, angle) + rot_y;
         xx3 := Convert_x (x3, y3, rot_x, rot_y, angle) + rot_x;     yy3 := Convert_y (x3, y3, rot_x, rot_y, angle) + rot_y;
-        xx4 := Convert_x (x4, y4, rot_x, rot_y, angle) + rot_x;     yy4 := Convert_y (x4, y4, rot_x, rot_y, angle) + rot_y;
 
         cx := (xx1 + xx3) div 2;
         cy := (yy1 + yy3) div 2;
@@ -174,7 +164,12 @@ function TransformPoint(X, Y: Double): TPoint;
         Dot_Arr[5] := TransformPoint(-1, MP);
         for i := 0 to 5 do Dot_Arr[i + 6] := Point(CX2 - Dot_Arr[i].X, CY2 - Dot_Arr[i].Y);
         Dot_Arr[12] := Dot_Arr[0];
-        Canvas.Polygon(Dot_Arr);
+        Canvas.PolyBezier(Dot_Arr);
+        {Закрасить области в окрестности центральной точки}
+        Canvas.FloodFill (cx + Round(0.5*a), cy + Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
+        Canvas.FloodFill (cx + Round(0.5*a), cy - Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
+        Canvas.FloodFill (cx - Round(0.5*a), cy + Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
+        Canvas.FloodFill (cx - Round(0.5*a), cy - Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
     end;
 
 procedure   TGuitar.Circle (const rad, x, y : integer; const Canvas : TCanvas);

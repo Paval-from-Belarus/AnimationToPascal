@@ -1,0 +1,54 @@
+unit SunObject;
+
+interface
+uses
+  Windows,  Classes, Graphics;
+type
+  TSun = class
+  private
+    x, y, ran_x, ran_y : integer;
+    angle       : real;
+    rays        : real;
+  public
+    constructor Create (const x,  y : integer) overload;
+    procedure   Draw   (const Canvas: TCanvas);
+    procedure   Sets;
+  const 
+    rad = 50;
+  end;
+
+implementation
+
+constructor TSun.Create (const x,  y : integer) overload;
+    begin
+        randomize;
+        self   := TSun.Create;
+        self.x := x;
+        self.y := y;
+        angle  := 0;
+    end;
+
+procedure TSun.Sets;
+    begin
+        ran_x := 1 + random(10);
+        ran_y := 1 + random(10);
+        angle := angle + 0.1;
+    end;
+procedure TSun.Draw(const Canvas: TCanvas);
+    var
+        k, j : integer;
+        s, g : real;
+    begin
+        Canvas.Pen.Color    := clYellow;
+        Canvas.Brush.Color  := clYellow;
+        Canvas.Ellipse(x-rad, y-rad, x+rad, y+rad);
+        Canvas.Pen.Width := 3;
+        Sets;
+        k :=  25; s := 0; g := 2*pi/k;
+        for j := 0 to k-1 do begin
+            Canvas.MoveTo(x+round(rad*cos(s+angle))+round(cos(s+angle)),y+round(rad*sin(s+angle))+round(sin(s)));
+            Canvas.Lineto(x+round((2.5+0.05*ran_x)*rad*cos(s+angle)),y+round((2.5+0.05*ran_y)*rad*sin(s+angle)));
+            s := s + g;
+        end;
+    end;
+end.

@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, GuitarObject;
+  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, GuitarObject, SunObject;
 
 type
   TFrames = class(TForm)
@@ -120,6 +120,7 @@ var
   Frames: TFrames;
   mainHero: TCharachter;
   guitar  : TGuitar;
+  sun     : TSun;
   animationSet: TAnimation;
   tick: Real;
   stage: Integer;
@@ -383,6 +384,8 @@ const
 begin
   with Canvas do
   begin
+    Pen.Color := clBlack;
+    Brush.Color := clBlack;
     moveTo(neckX, neckY);
     LineTo(neckX, neckY + bodyLen);
     Ellipse(neckX - headRadius, neckY - 2 * headRadius, neckX + headRadius, neckY);
@@ -539,6 +542,7 @@ begin
   guitar   := TGuitar.Create(400, 400);
   guitar.PRotPoint := Point (400, 400);
   guitar.PAngle := 0;
+  sun := TSun.Create(100, 100);
   animationSet := TAnimation.Create(Frames);
   stage := 1;
   animationSet.action := walk;
@@ -559,8 +563,9 @@ end;
 
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
 begin
-  mainHero.draw(self.Canvas);
-  guitar.Draw(self.Canvas, pmCopy);
+  mainHero.Draw(self.Canvas);
+  guitar.Draw  (self.Canvas);
+  sun.Draw     (self.Canvas);
 end;
 
 procedure TFrames.tmrRenderTimer(Sender: TObject);
@@ -571,6 +576,7 @@ begin
 //  else
   mainHero.setPos(mainHero.neckX + 1, mainHero.neckY);
   guitar.PAngle := guitar.PAngle - 0.1;
+  sun.Sets;
   pbDrawGrid.Repaint;
 //Canvas.Pen.Mode := pmNotXor;
 //angle:= angle + 0.5;

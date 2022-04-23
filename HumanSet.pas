@@ -10,7 +10,7 @@ uses
 type
   TCharachter = class
     procedure draw(const Canvas: TCanvas);
-    procedure setPos(const X, Y: Integer);
+    procedure setPos(const floatX, floatY: Real);
     procedure setScale(const scale: Real);
     constructor Create(const X, Y: Integer); overload;
   public
@@ -19,17 +19,15 @@ type
     body: TLimb;
     head: THead;
   private
-    neckX, neckY: Integer;
-    bodyLen: Integer;
     scale: real;
+    posX, posY: Real;
     const
       defArmWidth = 4;
       defArmAngle = Pi / 4;
       defLegAngle = Pi / 8;
       defBodyLen = 50;
-      defNeckLen = 7;
+      defNeckLen = 3;
       defHeadSize = 15;
-    property nextPos: Integer read bodyLen;
 
   end;
 
@@ -62,10 +60,6 @@ type
   public
   end;
 
-  TPosition = record
-    startValue, finalValue: Real;
-  end;
-
 var
   Frames: TFrames;
 
@@ -85,37 +79,45 @@ end;
 
 constructor TCharachter.Create(const X, Y: Integer);
 begin
-  self := TCharachter.Create;
-  neckX := X;
-  neckY := Y;
-  bodyLen := defBodyLen;
+  posX := X;
+  posY := Y;
   scale := 1;
-  leftArm := TArm.Create(-defArmAngle, X, Y);
-  RightArm := TArm.Create(defArmAngle, X, Y);
-  leftLeg := TLeg.Create(-defLegAngle, X, Y + bodyLen);
-  rightLeg := TLeg.Create(defLegAngle, X, Y + bodyLen);
   head := THead.Create(X, Y, defNeckLen, defHeadSize);
   body := TLimb.Create(0, X, Y, defBodyLen);
+  leftArm := TArm.Create(-defArmAngle, X, Y);
+  RightArm := TArm.Create(defArmAngle, X, Y);
+  leftLeg := TLeg.Create(-defLegAngle, X, Y + body.Len);
+  rightLeg := TLeg.Create(defLegAngle, X, Y + body.Len);
+  ;
 end;
 
 procedure TCharachter.setScale(const scale: Real);
 begin
-  bodyLen := round(bodyLen * scale / self.scale);
   self.scale := scale;
   leftArm.setScale(scale);
   rightArm.setScale(scale);
   leftLeg.setScale(scale);
   rightLeg.setScale(scale);
+  body.setScale(scale);
   head.setScale(scale);
+  leftLeg.setPos(head.X, head.Y + body.Len);
+  rightLeg.setPos(head.X, head.Y + body.Len);
 end;
 
-procedure TCharachter.setPos(const X: Integer; const Y: Integer);
+procedure TCharachter.setPos(const floatX: Real; const floatY: Real);
+var
+  X, Y: Integer;
 begin
+  posX := floatX;
+  posY := floatY;
+  X := round(floatX);
+  Y := round(floatY);
   head.setPos(X, Y);
+  body.setPos(X, Y);
   leftArm.setPos(X, Y);
   rightArm.setPos(X, Y);
-  leftLeg.setPos(X, Y + bodyLen);
-  rightLeg.setPos(X, Y + bodyLen);
+  leftLeg.setPos(X, Y + body.Len);
+  rightLeg.setPos(X, Y +  body.Len);
 end;
 
 procedure TCharachter.draw(const Canvas: TCanvas);
@@ -141,6 +143,13 @@ begin
   Result.ankleAngle := (startPos.ankleAngle - (startPos.ankleAngle - endPos.ankleAngle) * tick);
 end;
 
+function getChanged(const startPos, endPos: TArmOrientation; tick: Real): TArmOrientation; overload;
+begin
+  Result.armAngle := (startPos.armAngle - (startPos.armAngle - endPos.armAngle) * tick);
+  Result.elBowAngle := (startPos.elBowAngle - (startPos.elBowAngle - endPos.elBowAngle) * tick);
+  Result.wristAngle := (startPos.wristAngle - (startPos.wristAngle - endPos.wristAngle) * tick);
+end;
+
 function getChanged(const startPos, endPos: Real; tick: Real): Real; overload;
 begin
   Result := (startPos - (startPos - endPos) * tick);
@@ -149,69 +158,94 @@ end;
 procedure tremor(var stage: Integer; var tick: Real; var hero: TCharachter);
 const
   startWrist = 0;
+  upSpeed = 0.15;
+  downSpeed = 0.13;
   endWrist = Pi / 2 + Pi / 6;
   startHead = Pi / 12 + Pi;
   endHead = Pi - Pi / 12;
-  armOrient: TArmOrientation =
-  (armAngle: -Pi / 4;
-   elBowAngle: Pi /3 + Pi /12;
-   wristAngle:  Pi / 12);
-
+  armOrient: array[0..1] of TArmOrientation = ((
+    armAngle: -Pi / 4;
+    elBowAngle: Pi / 3 + Pi / 12;
+    wristAngle: Pi / 3 + Pi / 6;
+  ), (
+    armAngle: -Pi / 4;
+    elBowAngle: Pi / 3;
+    wristAngle: Pi / 12;
+  ));
+var
+  castSpeed: Real;
 begin
+  if stage = 1 then
+    castSpeed := upSpeed
+  else
+    castSpeed := downSpeed;
   with hero do
     if stage = 0 then
     begin
-      leftArm.setWrist(getChanged(startWrist, endWrist, tick));
+      leftArm.Orient := getChanged(armOrient[stage], armOrient[stage + 1], tick);
       head.setAngle(getChanged(startHead, endHead, tick));
     end
     else
     begin
 
-      leftArm.setWrist(getChanged(endWrist, startWrist, tick));
+      leftArm.Orient := getChanged(armOrient[stage], armOrient[stage - 1], tick);
       head.setAngle(getChanged(endHead, startHead, tick));
     end;
-        if tick > 1 then
-        begin
-          tick:= 0;
-          if stage = 0 then
-            stage:= 1 else stage:= 0;
-        end else tick:= tick + 0.1;
-
+  if tick > 1 then
+  begin
+    tick := 0;
+    if stage = 0 then
+      stage := 1
+    else
+      stage := 0;
+  end
+  else
+    tick := tick + castSpeed;
 end;
 
 procedure play(var stage: Integer; var tick: Real; var hero: TCharachter);
 const
-  speedWrist = 0.02;
+  speedCast = 0.03;
+  handPos: array[0..2] of Real = (Pi / 4 , Pi / 4 - Pi / 12, Pi / 4 + Pi / 12);
 begin
   with hero do
   begin
+
     rightArm.setElbow(Pi / 2 + Pi / 3);
     leftArm.setElbow(Pi / 2 - Pi / 6);
     leftArm.setAngle(-Pi / 4);
-    case stage of
-      0: begin
-       rightArm.setAngle(Pi / 3);
+    with rightArm do
+      case stage of
+        0:
+          begin
+            setAngle(Pi / 3);
+            setWrist(handPos[stage]);
+          end;
+        1:
+          begin
+            setAngle(Pi / 6);
+            setWrist(handPos[stage]);
+          end;
+        2:
+          begin
+            setAngle(Pi / 4);
+            setWrist(handPos[stage]);
+          end;
       end;
-      1: begin
-       rightArm.setAngle(Pi / 6);
-      end;
-      2: begin
-      rightArm.setAngle(Pi / 4);
-      end;
-    end;
 
     if tick > 1 then
     begin
-      stage:= Random(3);
+      stage := Random(3);
       tick := 0;
     end;
-    tick := tick + speedWrist;
+    tick := tick + speedCast;
   end;
 end;
 
 procedure walk(var stage: Integer; var tick: Real; var hero: TCharachter);
 const
   maxStage = 3;
+  speedWalking = 0.1;
 const
   leftLegOrient: array[0..3] of TLegOrientation = ((
     legAngle: -Pi / 4;
@@ -254,7 +288,7 @@ begin
     begin
       leftLeg.Orient := getChanged(leftLegOrient[stage], leftLegOrient[stage + 1], tick);
       rightLeg.Orient := getChanged(rightLegOrient[stage], rightLegOrient[stage + 1], tick);
-      tick := tick + 0.12;
+      tick := tick + speedWalking;
     end
     else
     begin
@@ -263,7 +297,8 @@ begin
     end;
   end;
  // var tempScale: Real := 1.2;
-  //hero.setScale(hero.scale + 0.008)
+//  if hero.scale < 2 then
+//    hero.setScale(hero.scale + 0.0005)
 end;
 
 procedure TFrames.FormCreate(Sender: TObject);
@@ -287,6 +322,7 @@ end;
 
 procedure TFrames.tmrRenderTimer(Sender: TObject);
 begin
+  mainHero.setPos(mainHero.posX + 0.05, mainHero.posY + 0.05);
   pbDrawGrid.Repaint;
 end;
 

@@ -26,6 +26,7 @@ type
     angle: Real;
     anrX, anrY: Integer;
     scale: Real;
+  public
     property X: Integer read anrX;
     property Y: Integer read anrY;
   end;
@@ -209,7 +210,7 @@ constructor TLeg.Create(const angle: Real; const X, Y: Integer);
 begin
   inherited Create(angle, X, Y);
   self.Len := defLegLen;
-  foreArm.Len:= defShinLen;
+  foreArm.Len := defShinLen;
   hand.Len := defFeetLen;
   hand.setAngle(Pi / 2);
   setAngle(angle);
@@ -217,12 +218,12 @@ end;
 
 procedure TLeg.setAngle(const angle: Real);
 begin
-inherited setAngle(angle);
+  inherited setAngle(angle);
 end;
 
 procedure TLeg.setKnee(const angle: Real);
 begin
-inherited setElbow(angle);
+  inherited setElbow(angle);
 end;
 
 procedure TLeg.setAnkle(const angle: Real);
@@ -232,7 +233,7 @@ end;
 
 procedure TLeg.draw(const Canvas: TCanvas);
 begin
-  inherited draw(canvas);
+  inherited draw(Canvas);
 end;
 
 procedure TLeg.setPos(const X: Integer; const Y: Integer);
@@ -247,12 +248,12 @@ end;
 
 procedure TLeg.setOrient(const savedPos: TLegOrientation);
 begin
-    inherited setOrient(TArmOrientation(savedPos));
+  inherited setOrient(TArmOrientation(savedPos));
 end;
 
 function TLeg.getOrient: TLegOrientation;
 begin
-    Result:= TLegOrientation(inherited getOrient);
+  Result := TLegOrientation(inherited getOrient);
 end;
 
 // head implementation
@@ -277,15 +278,18 @@ begin
 end;
 
 procedure THead.setScale(const scale: Real);
-var tempRadius: Integer;
+var
+  tempLen, tempRadius: Integer;
 begin
-  inherited setScale(scale);
-   tempRadius:= Round(radius * scale / self.scale);
-   if tempRadius <> radius then
-      begin
-        self.scale:= scale;
-        radius:= tempRadius;
-      end;
+  tempLen:= Round(Len * scale / self.scale);
+  tempRadius := Round(radius * scale  / self.scale);
+  if (tempRadius <> radius) and (tempLen <> Len) then
+  begin
+    self.scale := scale;
+    radius := tempRadius;
+    Len:= tempLen;
+  end;
 end;
+
 end.
 

@@ -29,6 +29,7 @@ type
   public
     property X: Integer read anrX;
     property Y: Integer read anrY;
+    property Rotation: Real read angle write setAngle;
   end;
 
   TArmOrientation = record

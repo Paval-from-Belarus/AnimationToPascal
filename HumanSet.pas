@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet;
+  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet, GuitarObject, SunObject;
 
 type
   TCharachter = class
@@ -57,6 +57,8 @@ type
     anmPlay: TAnimation;
     anmTremor: TAnimation;
     mainHero: TCharachter;
+    guitar: TGuitar;
+    sun: TSun;
   public
   end;
 
@@ -117,7 +119,7 @@ begin
   leftArm.setPos(X, Y);
   rightArm.setPos(X, Y);
   leftLeg.setPos(X, Y + body.Len);
-  rightLeg.setPos(X, Y +  body.Len);
+  rightLeg.setPos(X, Y + body.Len);
 end;
 
 procedure TCharachter.draw(const Canvas: TCanvas);
@@ -206,7 +208,7 @@ end;
 procedure play(var stage: Integer; var tick: Real; var hero: TCharachter);
 const
   speedCast = 0.03;
-  handPos: array[0..2] of Real = (Pi / 4 , Pi / 4 - Pi / 12, Pi / 4 + Pi / 12);
+  handPos: array[0..2] of Real = (Pi / 4, Pi / 4 - Pi / 12, Pi / 4 + Pi / 12);
 begin
   with hero do
   begin
@@ -310,6 +312,11 @@ begin
   anmWalk := TAnimation.Create(mainHero, walk);
   anmPlay := TAnimation.Create(mainHero, play);
   anmTremor := TAnimation.Create(mainHero, tremor);
+
+  guitar := TGuitar.Create(400, 400);
+  guitar.PRotPoint := Point(400, 400);
+  guitar.PAngle := 0;
+  sun := TSun.Create(100, 100);
 end;
 
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
@@ -317,13 +324,22 @@ begin
   anmWalk.update;
   anmPlay.update;
   anmTremor.update;
-  mainHero.draw(self.Canvas);
+  mainHero.draw(Canvas);
+
+  guitar.Draw(Canvas);
+  sun.Draw(Canvas);
 end;
 
 procedure TFrames.tmrRenderTimer(Sender: TObject);
 begin
-  mainHero.setPos(mainHero.posX + 0.05, mainHero.posY + 0.05);
+    Canvas.Pen.Color := clBlack;
+   // Canvas.Brush.Color := clBlack;
+  guitar.PAngle := mainHero.leftArm.Rotation;
+  //mainHero.setPos(mainHero.posX + 0.05, mainHero.posY + 0.05);
   pbDrawGrid.Repaint;
+
+  //
+  //sun.Sets;
 end;
 
 end.

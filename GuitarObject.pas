@@ -198,3 +198,4 @@ procedure   TGuitar.Circle (const rad, x, y : integer; const Canvas : TCanvas);
     end;
 
 end.
+

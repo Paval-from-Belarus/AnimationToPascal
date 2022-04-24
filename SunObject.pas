@@ -13,6 +13,9 @@ type
     procedure   Set_MoveSunAngle    (const Alpha : Real);     function    Get_MoveSunAngle         : Real;
     procedure   Set_RotatingPoint   (const pnt : TPoint);     function    Get_RotatingPoint        : Tpoint;
     procedure   Set_Rad             (const rad : Integer);    function    Get_Rad                : Integer;
+    x, y, ran_x, ran_y      : integer;
+    angle, move_sun_angle   : real;
+    rays            : real;
   public
     constructor Create (const x,  y : integer) overload;
     procedure   Draw   (const Canvas: TCanvas);

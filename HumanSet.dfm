@@ -3,7 +3,7 @@ object Frames: TFrames
   Top = 0
   Caption = 'Frames'
   ClientHeight = 482
-  ClientWidth = 784
+  ClientWidth = 787
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object Frames: TFrames
   Font.Name = 'Tahoma'
   Font.Style = []
   OnCreate = FormCreate
-  OnPaint = FormPaint
   TextHeight = 13
   object imgMap: TImage
     Left = 584
@@ -22,7 +21,7 @@ object Frames: TFrames
   object pbDrawGrid: TPaintBox
     Left = -6
     Top = 0
-    Width = 791
+    Width = 785
     Height = 481
     OnPaint = pbDrawGridPaint
   end

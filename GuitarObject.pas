@@ -6,11 +6,13 @@ uses
 type
     TGuitar = class
   private
-    x, y        : integer;
-    round_point : TPoint;
-    angle       : real;
-     procedure   Set_Angle         (const Alpha : Real);   function    Get_Angle         : Real;
-     procedure   Set_RotatingPoint (const pnt : TPoint);   function    Get_RotatingPoint : Tpoint;
+    x, y                    : integer;
+    round_point             : TPoint;
+    angle                   : real;
+    width, heigh            : Integer;
+     procedure   Set_Angle         (const Alpha : Real);    function    Get_Angle         : Real;
+     procedure   Set_RotatingPoint (const pnt : TPoint);    function    Get_RotatingPoint : Tpoint;
+     procedure   Set_Width         (const width : Integer); function    Get_Width         : Integer;
   public
     constructor Create (const x,  y : integer) overload;
     procedure   Draw   (const Canvas: TCanvas);
@@ -18,11 +20,9 @@ type
     class procedure   RotatedEllipse  (cx, cy, a, b    : integer; angle : real; const rot_point : TPoint; const Canvas : TCanvas);
     procedure   Circle          (const rad, x, y : integer; const Canvas : TCanvas);
   published
-    property    PRotPoint      : Tpoint read Get_RotatingPoint write Set_RotatingPoint;
-    property    PAngle         : Real   read Get_Angle         write Set_Angle;
-  const
-    size_width = 150;
-    size_heigh = 5*size_width div 12;
+    property    PRotPoint      : Tpoint   read Get_RotatingPoint write Set_RotatingPoint;
+    property    PAngle         : Real     read Get_Angle         write Set_Angle;
+    property    PWidth         : Integer  read Get_Width         write Set_Width;
   end;
 
 implementation
@@ -33,6 +33,7 @@ constructor TGuitar.Create(const x : Integer; const y: Integer);
         self := TGuitar.Create;
         self.x := x;
         self.y := y;
+        width  := 150;
     end;
 
 procedure TGuitar.Set_RotatingPoint(const pnt : TPoint);
@@ -45,6 +46,16 @@ function TGuitar.Get_RotatingPoint: TPoint;
         result := round_point;
     end;
 
+procedure TGuitar.Set_Width(const width: Integer);
+    begin
+       if (self.width <> width) then self.width := width;
+    end;
+
+function TGuitar.Get_Width: Integer;
+    begin
+        result := width;
+    end;
+
 procedure TGuitar.Set_Angle(const Alpha: Real);
     begin
         angle := alpha;
@@ -55,7 +66,6 @@ function TGuitar.Get_Angle: Real;
         result := angle;
     end;
 
-
 function    Convert_x (const x, y, xc, yc : integer; const angle : real) : integer;
     begin
         result := Round((x-xc)*cos(angle) - (y -yc)*sin(angle)) ;
@@ -65,7 +75,6 @@ function    Convert_y (const x, y, xc, yc : integer; const angle : real) : integ
     begin
         result := Round((x -xc)*sin(angle) + (y -yc)*cos(angle));
     end;
-
 
 procedure   TGuitar.RotateRectangle (const x1, y1, x3, y3 : integer; const angle : real; const rot_point : TPoint; const Canvas : TCanvas);
     var
@@ -87,18 +96,25 @@ procedure   TGuitar.RotateRectangle (const x1, y1, x3, y3 : integer; const angle
 
 procedure   TGuitar.Draw (const Canvas: TCanvas);
     var
+        Prev_PenColor, Prev_BrushColor : TColor;
+        Prev_PenWidth : Integer;
         w_1, w_2, w_g, w_c, h_1, h_2, h_g, h_c: integer;
     begin
+        heigh := 5*width div 12;
 
-        w_1    :=  Round (0.33*size_width);
-        w_2    :=  Round (0.17*size_width);
-        w_g    :=  Round (0.42*size_width);
-        w_c    :=  Round (0.083*size_width);
+        Prev_PenColor   := Canvas.Pen.Color;
+        Prev_BrushColor := Canvas.Brush.Color;
+        Prev_PenWidth   := Canvas.Pen.Width;
 
-        h_1  :=  size_heigh;
-        h_2  :=  Round (0.8*size_heigh);
-        h_g  :=  Round (0.04*size_heigh);
-        h_c  :=  Round (0.08*size_heigh);
+        w_1    :=  Round (0.33*width);
+        w_2    :=  Round (0.17*width);
+        w_g    :=  Round (0.42*width);
+        w_c    :=  Round (0.083*width);
+
+        h_1  :=  heigh;
+        h_2  :=  Round (0.8*heigh);
+        h_g  :=  Round (0.04*heigh);
+        h_c  :=  Round (0.08*heigh);
 
         Canvas.Pen.Width := 3;
         Canvas.Pen.Color    := $00000040;
@@ -115,6 +131,10 @@ procedure   TGuitar.Draw (const Canvas: TCanvas);
         Canvas.Pen.Color    := clBlack;
         Canvas.Brush.Color  := clBlack;
         RotatedEllipse(x - w_2 div 2 - Round (0.45 *w_1),  y, Round(0.15*h_1), Round(0.15*h_1), angle, round_point, Canvas);
+
+        Canvas.Pen.Color   := Prev_PenColor;
+        Canvas.Brush.Color := Prev_BrushColor;
+        Canvas.Pen.Width   := Prev_PenWidth;
     end;
 
 class procedure   TGuitar.RotatedEllipse (cx, cy, a, b   : integer; angle : real; const rot_point : TPoint; const Canvas : TCanvas);

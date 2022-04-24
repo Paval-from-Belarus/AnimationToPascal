@@ -6,54 +6,19 @@ uses
 type
   TSun = class
   private
-    x, y, ran_x, ran_y, rad : integer;
+    x, y, ran_x, ran_y      : integer;
     angle, move_sun_angle   : real;
-    rays                    : real;
-    round_point             : TPoint;
-    procedure   Set_MoveSunAngle    (const Alpha : Real);     function    Get_MoveSunAngle         : Real;
-    procedure   Set_RotatingPoint   (const pnt : TPoint);     function    Get_RotatingPoint        : Tpoint;
-    procedure   Set_Rad             (const rad : Integer);    function    Get_Rad                : Integer;
+    rays            : real;
   public
     constructor Create (const x,  y : integer) overload;
     procedure   Draw   (const Canvas: TCanvas);
     procedure   Sets;
-  published
-    property    PRotPoint      : Tpoint   read Get_RotatingPoint write Set_RotatingPoint;
-    property    PMoveSunAngle  : Real     read Get_MoveSunAngle  write Set_MoveSunAngle;
-    property    PRad           : Integer  read Get_Rad           write Set_Rad;
+  const
+    rad = 35;
+    round_point : TPoint = (x : 500; y : 500);
   end;
 
 implementation
-
-procedure  TSun.Set_MoveSunAngle (const Alpha : Real);
-    begin
-        move_sun_angle := Alpha;
-    end;
-
-function   TSun.Get_MoveSunAngle : Real;
-    begin
-        result := move_sun_angle;
-    end;
-
-procedure  TSun.Set_RotatingPoint   (const pnt : TPoint);
-    begin
-        round_point := pnt;
-    end;
-
-function   TSun.Get_RotatingPoint  : Tpoint;
-    begin
-        result := round_point;
-    end;
-
-procedure TSun.Set_Rad(const rad : Integer);
-    begin
-        self.rad := rad;
-    end;
-
-function  TSun.Get_Rad: Integer;
-    begin
-        result := rad;
-    end;
 
 function    Convert_x (const x, y, xc, yc : integer; const angle : real) : integer;
     begin
@@ -73,9 +38,6 @@ constructor TSun.Create (const x,  y : integer) overload;
         self.y := y;
         move_sun_angle := 0;
         angle  := 0;
-        rad    := 45;
-        round_point.x := 500;
-        round_point.y := 500;
     end;
 
 procedure TSun.Sets;

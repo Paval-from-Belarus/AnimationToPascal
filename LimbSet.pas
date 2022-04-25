@@ -6,12 +6,9 @@ uses
   VCL.Graphics, System.Math;
 
 const
-  defLegLen = 40;
-  defShinLen = 30;
   defArmLen = 30;
   defForeArmLen = 20;
   defHandLen = 10;
-  defFeetLen = 13;
 
 type
   TLimb = class
@@ -32,45 +29,34 @@ type
     property Rotation: Real read angle write setAngle;
   end;
 
-  TArmOrientation = record
-    armAngle, elBowAngle, wristAngle: Real;
+  TLongLimbOrientation = record
+    mainAngle, midAngle, finAngle: Real;
+  end;
+  TLongLimbSize = record
+    arm, foreArm, hand: Integer;
   end;
 
-  TLegOrientation = record
-    legAngle, kneeAngle, ankleAngle: Real;
-  end;
-
-  TArm = class(TLimb)
+  TLongLimb = class(TLimb) //TLongLimb
   private
     foreArm, hand: TLimb;
     fingerX, fingerY: Integer;
-    procedure setOrient(const savedPos: TArmOrientation);
-    function getOrient: TArmOrientation;
+    procedure setOrient(const savedPos: TLongLimbOrientation);
+    function getOrient: TLongLimbOrientation;
+    function getSize: TLongLimbSize;
+    procedure setSize(const size: TLongLimbSize);
   public
     procedure draw(const Canvas: TCanvas); override;
     procedure setPos(const X, Y: Integer); override;
     procedure setAngle(const angle: Real); override;
-    procedure setElbow(const angle: Real);
-    procedure setWrist(const angle: Real);
+    procedure setMidJoint(const angle: Real);
+    procedure setFinJoint(const angle: Real);
     procedure setScale(const scale: Real); override;
 
     constructor Create(const angle: Real; const X, Y: Integer);
-    property Orient: TArmOrientation read getOrient write setOrient;
-  end;
-
-  TLeg = class(TArm)
-  private
-    procedure setOrient(const savedPos: TLegOrientation);
-    function getOrient: TLegOrientation;
-  public
-    procedure draw(const Canvas: TCanvas); override;
-    procedure setPos(const X, Y: Integer); override;
-    procedure setAngle(const angle: Real); override;
-    procedure setKnee(const angle: Real);
-    procedure setAnkle(const angle: Real);
-    procedure setScale(const scale: Real); override;
-    constructor Create(const angle: Real; const X, Y: Integer); overload;
-    property Orient: TLegOrientation read getOrient write setOrient;
+    property Orient: TLongLimbOrientation read getOrient write setOrient;
+    property Size: TLongLimbSize read getSize write setSize;
+    property midLimb: TLimb read foreArm;
+    property finLimb: TLimb read hand;
   end;
 
   THead = class(TLimb)
@@ -126,14 +112,14 @@ end;
 
 //Arm implementation
 
-constructor TArm.Create(const angle: Real; const X, Y: Integer);
+constructor TLongLimb.Create(const angle: Real; const X, Y: Integer);
 begin
   foreArm := TLimb.Create(angle, X, Y, defforeArmLen);
   hand := TLimb.Create(angle, X, Y, defHandLen);
   inherited Create(angle, X, Y, defArmLen);
 end;
 
-procedure TArm.draw(const Canvas: TCanvas);
+procedure TLongLimb.draw(const Canvas: TCanvas);
 begin
   with Canvas do
   begin
@@ -144,7 +130,7 @@ begin
   end;
 end;
 
-procedure TArm.setPos(const X: Integer; const Y: Integer);
+procedure TLongLimb.setPos(const X: Integer; const Y: Integer);
 var
   changeX, changeY: Integer;
 begin
@@ -157,104 +143,66 @@ begin
   inherited setPos(X, Y);
 end;
 
-procedure TArm.setAngle(const angle: Real);
+procedure TLongLimb.setAngle(const angle: Real);
 begin
   self.angle := angle;
   foreArm.anrX := anrX + Round(Len * sin(angle));
   foreArm.anrY := anrY + Round(Len * cos(angle));
 
-  setElbow(foreArm.angle);
+  setMidJoint(foreArm.angle);
 end;
 
-procedure TArm.setElbow(const angle: Real);
+procedure TLongLimb.setMidJoint(const angle: Real);
 begin
   hand.anrX := foreArm.anrX + Round(foreArm.Len * sin(angle));
   hand.anrY := foreArm.anrY + Round(foreArm.Len * cos(angle));
 
   foreArm.setAngle(angle);
-  setWrist(hand.angle);
+  setFinJoint(hand.angle);
 end;
 
-procedure TArm.setWrist(const angle: Real);
+procedure TLongLimb.setFinJoint(const angle: Real);
 begin
   fingerX := hand.anrX + Round(hand.Len * sin(angle));
   fingerY := hand.anrY + Round(hand.Len * cos(angle));
   hand.setAngle(angle);
 end;
 
-procedure TArm.setScale(const scale: Real);
+procedure TLongLimb.setScale(const scale: Real);
 begin
   inherited setScale(scale);
   foreArm.setScale(scale);
   hand.setScale(scale);
   setAngle(angle);
-  setElbow(foreArm.angle);
+  setMidJoint(foreArm.angle);
   //  setWrist(wristAngle);
 end;
 
-procedure TArm.setOrient(const savedPos: TArmOrientation);
+procedure TLongLimb.setOrient(const savedPos: TLongLimbOrientation);
 begin
-  setAngle(savedPos.armAngle);
-  setElbow(savedPos.elBowAngle);
-  setWrist(savedPos.wristAngle);
+  setAngle(savedPos.mainAngle);
+  setMidJoint(savedPos.midAngle);
+  setFinJoint(savedPos.finAngle);
 end;
 
-function TArm.getOrient: TArmOrientation;
+function TLongLimb.getOrient: TLongLimbOrientation;
 begin
-  Result.armAngle := angle;
-  Result.elBowAngle := foreArm.angle;
-  Result.wristAngle := hand.angle;
-end;
-//Leg implementation
-
-constructor TLeg.Create(const angle: Real; const X, Y: Integer);
-begin
-  inherited Create(angle, X, Y);
-  self.Len := defLegLen;
-  foreArm.Len := defShinLen;
-  hand.Len := defFeetLen;
-  hand.setAngle(Pi / 2);
-  setAngle(angle);
+  Result.mainAngle := angle;
+  Result.midAngle := foreArm.angle;
+  Result.finAngle := hand.angle;
 end;
 
-procedure TLeg.setAngle(const angle: Real);
+function TLongLimb.getSize: TLongLimbSize;
 begin
-  inherited setAngle(angle);
+  Result. arm := self.Len;
+  Result.foreArm := foreArm.Len;
+  Result.hand :=  hand.Len;
 end;
-
-procedure TLeg.setKnee(const angle: Real);
+procedure TLongLimb.setSize(const size: TLongLimbSize);
 begin
-  inherited setElbow(angle);
-end;
-
-procedure TLeg.setAnkle(const angle: Real);
-begin
-  inherited setWrist(angle);
-end;
-
-procedure TLeg.draw(const Canvas: TCanvas);
-begin
-  inherited draw(Canvas);
-end;
-
-procedure TLeg.setPos(const X: Integer; const Y: Integer);
-begin
-  inherited setPos(X, Y);
-end;
-
-procedure TLeg.setScale(const scale: Real);
-begin
-  inherited setScale(scale);
-end;
-
-procedure TLeg.setOrient(const savedPos: TLegOrientation);
-begin
-  inherited setOrient(TArmOrientation(savedPos));
-end;
-
-function TLeg.getOrient: TLegOrientation;
-begin
-  Result := TLegOrientation(inherited getOrient);
+  Len:= size.arm;
+  foreArm.Len := size.foreArm;
+  hand.Len := size.hand;
 end;
 
 // head implementation

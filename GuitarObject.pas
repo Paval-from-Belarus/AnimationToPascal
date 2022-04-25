@@ -3,14 +3,19 @@ unit GuitarObject;
 interface
 
 uses
-  Windows, Classes, Graphics;
+  Windows, Classes, VCL.Graphics;
 
+    const
+    firstRadius = 20;
+    secondRadius = 15;
+    grifLen = 50;
 type
   TGuitar = class
   private
     x, y: integer;
     round_point: TPoint;
     angle: real;
+
     procedure Set_Angle(const Alpha: Real);
     function Get_Angle: Real;
     procedure Set_RotatingPoint(const pnt: TPoint);
@@ -18,6 +23,7 @@ type
   public
     constructor Create(const x, y: integer)overload;
     procedure Draw(const Canvas: TCanvas);
+        procedure OldDraw(const Canvas: TCanvas);
     procedure RotateRectangle(const x1, y1, x3, y3: integer; const angle: real; const rot_point: TPoint; const Canvas: TCanvas);
     class procedure RotatedEllipse(cx, cy, a, b: integer; angle: real; const rot_point: TPoint; const Canvas: TCanvas);
     procedure Circle(const rad, x, y: integer; const Canvas: TCanvas);
@@ -91,6 +97,7 @@ begin
   Canvas.Polygon([Point(xx1, yy1), Point(xx2, yy2), Point(xx3, yy3), Point(xx4, yy4), Point(xx1, yy1)]);
 end;
 
+
 procedure TGuitar.Draw(const Canvas: TCanvas);
 var
   w_1, w_2, w_g, w_c, h_1, h_2, h_g, h_c: integer;
@@ -106,21 +113,22 @@ begin
   h_g := Round(0.04 * size_heigh);
   h_c := Round(0.08 * size_heigh);
 
-  Canvas.Pen.Width := 3;
+ Canvas.Pen.Width := 3;
   Canvas.Pen.Color := $00000040;
   Canvas.Brush.Color := $00000040;
-
+ //Canvas.Brush.Color:= clWhite;
   RotateRectangle(x, y - h_g, x + w_g, y + h_g, angle, round_point, Canvas);
   RotateRectangle(x + w_g, y - h_c, x + w_c + w_g, y + h_c, angle, round_point, Canvas);
 
   RotatedEllipse((2 * x - w_2 - w_1) div 2, (y), (w_1) div 2, (h_1) div 2, angle, round_point, Canvas);
 
-  Canvas.Pen.Color := $00000040;
+ Canvas.Pen.Color := $00000040;
   Canvas.Brush.Color := $00000040;
   RotatedEllipse((x - w_2 + x) div 2, (y - h_2 div 2 + y + h_2 div 2) div 2, (x - (x - w_2)) div 2, (y + h_2 div 2 - (y - h_2 div 2)) div 2, angle, round_point, Canvas);
   Canvas.Pen.Color := clBlack;
   Canvas.Brush.Color := clBlack;
   RotatedEllipse(x - w_2 div 2 - Round(0.45 * w_1), y, Round(0.15 * h_1), Round(0.15 * h_1), angle, round_point, Canvas);
+
 end;
 
 class procedure TGuitar.RotatedEllipse(cx, cy, a, b: integer; angle: real; const rot_point: TPoint; const Canvas: TCanvas);
@@ -178,15 +186,48 @@ begin
   Dot_Arr[12] := Dot_Arr[0];
   Canvas.PolyBezier(Dot_Arr);
         {Закрасить области в окрестности центральной точки}
-  Canvas.FloodFill(cx + Round(0.5 * a), cy + Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
-  Canvas.FloodFill(cx + Round(0.5 * a), cy - Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
-  Canvas.FloodFill(cx - Round(0.5 * a), cy + Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
-  Canvas.FloodFill(cx - Round(0.5 * a), cy - Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
+ // Canvas.FloodFill(cx + Round(0.5 * a), cy + Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
+ // Canvas.FloodFill(cx + Round(0.5 * a), cy - Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
+ // Canvas.FloodFill(cx - Round(0.5 * a), cy + Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
+ // Canvas.FloodFill(cx - Round(0.5 * a), cy - Round(0.5 * a), Canvas.Pen.Color, TFillStyle.fsBorder);
 end;
 
 procedure TGuitar.Circle(const rad, x, y: integer; const Canvas: TCanvas);
 begin
   Canvas.Ellipse(x - rad, y - rad, x + rad, y + rad);
+end;
+
+procedure TGuitar.olddraw(const Canvas: TCanvas);
+var
+  centerX, centerY: Integer;
+  tempAngle: Real;
+  borderX, borderY, borderEq: Integer;
+begin
+Canvas.Brush.Color:= clRed;
+centerX:= x - firstRadius;
+centerY:= y; //somme magic
+//Canvas.Ellipse(centerX - firstRadius, centerY - firstRadius, centerX + firstRadius, centerY + firstRadius);
+tempAngle:= sqr(secondRadius)  / (firstRadius * secondRadius);
+borderX:=  centerX + Round(sin(tempAngle) * secondRadius);
+borderY:= centerY;
+borderEq:= Round(cos(tempAngle) * secondRadius);
+Canvas.Arc(centerX - firstRadius, centerY - firstRadius, centerX + firstRadius,centerY + firstRadius,
+borderX, borderY - borderEq,
+borderX, borderY + borderEq ) ;
+
+centerX:= x + secondRadius div 5;
+centerY:= y; //somme magic
+Canvas.Arc(centerX - secondRadius, centerY - secondRadius, centerX + secondRadius, centerY + secondRadius,
+borderX, borderY + borderEq,
+borderX, borderY - borderEq
+);
+Canvas.MoveTo(centerX + secondRadius, centerY);
+Canvas.LineTo(centerX + secondRadius + grifLen, centerY);
+  with Canvas do
+    begin
+   ;   Brush.Color:= clRed;
+     // arc(x - 20, y - 20, x + 20, y + 20, 10, 20, x, y);
+    end;
 end;
 
 end.

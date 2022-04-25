@@ -7,6 +7,15 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet, GuitarObject, SunObject;
 
+const
+  defLegLen = 40;
+  defShinLen = 30;
+  defArmLen = 30;
+  defForeArmLen = 20;
+  defHandLen = 10;
+  defFeetLen = 13;
+  defLegSize : TLongLimbSize = ( arm:defLegLen; foreArm:defShinLen; hand: defFeetLen );
+
 type
   TCharachter = class
     procedure draw(const Canvas: TCanvas);
@@ -14,13 +23,14 @@ type
     procedure setScale(const scale: Real);
     constructor Create(const X, Y: Integer); overload;
   public
-    leftArm, rightArm: TArm;
-    leftLeg, rightLeg: TLeg;
+    leftArm, rightArm: TLongLimb;
+    leftLeg, rightLeg: TLongLimb;
     body: TLimb;
     head: THead;
+    posX, posY: Real;
+    guitar: TGuitar;
   private
     scale: real;
-    posX, posY: Real;
     const
       defArmWidth = 4;
       defArmAngle = Pi / 4;
@@ -57,11 +67,9 @@ type
     anmPlay: TAnimation;
     anmTremor: TAnimation;
     mainHero: TCharachter;
-    guitar: TGuitar;
     sun: TSun;
   public
   end;
-
 var
   Frames: TFrames;
 
@@ -86,11 +94,16 @@ begin
   scale := 1;
   head := THead.Create(X, Y, defNeckLen, defHeadSize);
   body := TLimb.Create(0, X, Y, defBodyLen);
-  leftArm := TArm.Create(-defArmAngle, X, Y);
-  RightArm := TArm.Create(defArmAngle, X, Y);
-  leftLeg := TLeg.Create(-defLegAngle, X, Y + body.Len);
-  rightLeg := TLeg.Create(defLegAngle, X, Y + body.Len);
-  ;
+  leftArm := TLongLimb.Create(-defArmAngle, X, Y);
+  rightArm := TLongLimb.Create(defArmAngle, X, Y);
+  leftLeg := TLongLimb.Create(-defLegAngle, X, Y + body.Len);
+  leftLeg.Size := defLegSize;
+  rightLeg := TLongLimb.Create(defLegAngle, X, Y + body.Len);
+  rightLeg.Size := defLegSize;
+
+  guitar := TGuitar.Create(rightArm.midLimb.X, rightArm.midLimb.Y);
+  guitar.PRotPoint := Point(rightArm.midLimb.X, rightArm.midLimb.Y);
+  guitar.PAngle := 0;
 end;
 
 procedure TCharachter.setScale(const scale: Real);
@@ -123,9 +136,6 @@ begin
 end;
 
 procedure TCharachter.draw(const Canvas: TCanvas);
-const
-  headRadius = 10;
-  angle = 0.5;
 begin
   with Canvas do
   begin
@@ -135,21 +145,15 @@ begin
     rightArm.draw(Canvas);
     leftLeg.draw(Canvas);
     rightLeg.draw(Canvas);
+    guitar.Draw(Canvas);
   end;
 end;
 
-function getChanged(const startPos, endPos: TLegOrientation; tick: Real): TLegOrientation; overload;
+function getChanged(const startPos, endPos: TLongLimbOrientation; tick: Real): TLongLimbOrientation; overload;
 begin
-  Result.legAngle := (startPos.legAngle - (startPos.legAngle - endPos.legAngle) * tick);
-  Result.kneeAngle := (startPos.kneeAngle - (startPos.kneeAngle - endPos.kneeAngle) * tick);
-  Result.ankleAngle := (startPos.ankleAngle - (startPos.ankleAngle - endPos.ankleAngle) * tick);
-end;
-
-function getChanged(const startPos, endPos: TArmOrientation; tick: Real): TArmOrientation; overload;
-begin
-  Result.armAngle := (startPos.armAngle - (startPos.armAngle - endPos.armAngle) * tick);
-  Result.elBowAngle := (startPos.elBowAngle - (startPos.elBowAngle - endPos.elBowAngle) * tick);
-  Result.wristAngle := (startPos.wristAngle - (startPos.wristAngle - endPos.wristAngle) * tick);
+  Result.mainAngle := (startPos.mainAngle - (startPos.mainAngle - endPos.mainAngle) * tick);
+  Result.midAngle := (startPos.midAngle - (startPos.midAngle - endPos.midAngle) * tick);
+  Result.finAngle := (startPos.finAngle - (startPos.finAngle - endPos.finAngle) * tick);
 end;
 
 function getChanged(const startPos, endPos: Real; tick: Real): Real; overload;
@@ -165,14 +169,14 @@ const
   endWrist = Pi / 2 + Pi / 6;
   startHead = Pi / 12 + Pi;
   endHead = Pi - Pi / 12;
-  armOrient: array[0..1] of TArmOrientation = ((
-    armAngle: -Pi / 4;
-    elBowAngle: Pi / 3 + Pi / 12;
-    wristAngle: Pi / 3 + Pi / 6;
+  armOrient: array[0..1] of TLongLimbOrientation = ((
+    mainAngle: -Pi / 4;
+    midAngle: Pi / 3 + Pi / 12;
+    finAngle: Pi / 3 + Pi / 6;
   ), (
-    armAngle: -Pi / 4;
-    elBowAngle: Pi / 3;
-    wristAngle: Pi / 12;
+    mainAngle: -Pi / 4;
+    midAngle: Pi / 3;
+    finAngle: Pi / 12;
   ));
 var
   castSpeed: Real;
@@ -212,26 +216,25 @@ const
 begin
   with hero do
   begin
-
-    rightArm.setElbow(Pi / 2 + Pi / 3);
-    leftArm.setElbow(Pi / 2 - Pi / 6);
+    rightArm.setMidJoint(Pi / 2 + Pi / 3);
+    leftArm.setMidJoint(Pi / 2 - Pi / 6);
     leftArm.setAngle(-Pi / 4);
     with rightArm do
       case stage of
         0:
           begin
             setAngle(Pi / 3);
-            setWrist(handPos[stage]);
+            setFinJoint(handPos[stage]);
           end;
         1:
           begin
             setAngle(Pi / 6);
-            setWrist(handPos[stage]);
+            setFinJoint(handPos[stage]);
           end;
         2:
           begin
             setAngle(Pi / 4);
-            setWrist(handPos[stage]);
+            setFinJoint(handPos[stage]);
           end;
       end;
 
@@ -249,39 +252,39 @@ const
   maxStage = 3;
   speedWalking = 0.1;
 const
-  leftLegOrient: array[0..3] of TLegOrientation = ((
-    legAngle: -Pi / 4;
-    kneeAngle: (-60 / 180) * Pi;
-    ankleAngle: Pi / 6;
+  leftLegOrient: array[0..3] of TLongLimbOrientation = ((
+    mainAngle: -Pi / 4;
+    midAngle: (-60 / 180) * Pi;
+    finAngle: Pi / 6;
   ), (
-    legAngle: -Pi / 9;
-    kneeAngle: -Pi / 3;
-    ankleAngle: Pi / 18
+    mainAngle: -Pi / 9;
+    midAngle: -Pi / 3;
+    finAngle: Pi / 18
   ), (
-    legAngle: Pi / 12;
-    kneeAngle: (-11 / 180) * Pi;
-    ankleAngle: Pi / 3;
+    mainAngle: Pi / 12;
+    midAngle: (-11 / 180) * Pi;
+    finAngle: Pi / 3;
   ), (
-    legAngle: Pi / 6;
-    kneeAngle: (25 / 180) * Pi;
-    ankleAngle: (Pi / 2 + Pi / 12);
+    mainAngle: Pi / 6;
+    midAngle: (25 / 180) * Pi;
+    finAngle: (Pi / 2 + Pi / 12);
   ));
-  rightLegOrient: array[0..3] of TLegOrientation = ((
-    legAngle: Pi / 6;
-    kneeAngle: (25 / 180) * Pi;
-    ankleAngle: (Pi / 2 + Pi / 12);
+  rightLegOrient: array[0..3] of TLongLimbOrientation = ((
+    mainAngle: Pi / 6;
+    midAngle: (25 / 180) * Pi;
+    finAngle: (Pi / 2 + Pi / 12);
   ), (
-    legAngle: Pi / 12;
-    kneeAngle: (-11 / 180) * Pi;
-    ankleAngle: Pi / 3;
+    mainAngle: Pi / 12;
+    midAngle: (-11 / 180) * Pi;
+    finAngle: Pi / 3;
   ), (
-    legAngle: -Pi / 9;
-    kneeAngle: -Pi / 3;
-    ankleAngle: Pi / 18
+    mainAngle: -Pi / 9;
+    midAngle: -Pi / 3;
+    finAngle: Pi / 18
   ), (
-    legAngle: -Pi / 4;
-    kneeAngle: -Pi / 3;
-    ankleAngle: Pi / 6;
+    mainAngle: -Pi / 4;
+    midAngle: -Pi / 3;
+    finAngle: Pi / 6;
   ));
 begin
   with hero do
@@ -299,8 +302,8 @@ begin
     end;
   end;
  // var tempScale: Real := 1.2;
-//  if hero.scale < 2 then
-//    hero.setScale(hero.scale + 0.0005)
+ // if hero.scale < 2 then
+ //  hero.setScale(hero.scale + 0.0005)
 end;
 
 procedure TFrames.FormCreate(Sender: TObject);
@@ -313,9 +316,7 @@ begin
   anmPlay := TAnimation.Create(mainHero, play);
   anmTremor := TAnimation.Create(mainHero, tremor);
 
-  guitar := TGuitar.Create(400, 400);
-  guitar.PRotPoint := Point(400, 400);
-  guitar.PAngle := 0;
+
   sun := TSun.Create(100, 100);
 end;
 
@@ -326,15 +327,15 @@ begin
   anmTremor.update;
   mainHero.draw(Canvas);
 
-  guitar.Draw(Canvas);
+ // guitar.Draw(Canvas);
   sun.Draw(Canvas);
 end;
 
 procedure TFrames.tmrRenderTimer(Sender: TObject);
 begin
-    Canvas.Pen.Color := clBlack;
+  Canvas.Pen.Color := clBlack;
    // Canvas.Brush.Color := clBlack;
-  guitar.PAngle := mainHero.leftArm.Rotation;
+  mainHero.guitar.PAngle := mainHero.leftArm.Rotation;
   //mainHero.setPos(mainHero.posX + 0.05, mainHero.posY + 0.05);
   pbDrawGrid.Repaint;
 

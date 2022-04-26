@@ -2,50 +2,88 @@ unit LandscapeObject;   {scenery}
 
 interface
 uses
-  Windows,  Classes, Graphics, SunObject;
+  Windows,  Classes, Graphics, GuitarObject;
   type
-    TLandscape = class
-    constructor Create   (const x, y : integer);  virtual;
-  private
-    x, y : integer;
-    {procedure   Draw     (const Canvas: TCanvas); virtual;
-    procedure   Set_Pos  (const X, Y: Integer);   virtual;
-    procedure   Set_Scale(const scale: Real);     virtual;}
-  private
-    Sun : TSun;
 
+  TLandscape = class
+  public
+    constructor Create   (const client_width, client_heigh : integer);
+    procedure   Draw     (const Canvas: TCanvas); virtual;
+  protected
+    class var client_width, client_heigh : integer;
   end;
+
     TClouds = class (TLandscape)
-    constructor Create           (const x, y : integer; const width : integer)  overload;
+  public
+    constructor Create           (const x, y : integer) overload;
     procedure   Construct        (const ox, oy : integer; const Canvas : TCanvas; const k : real);
-    procedure   Draw             (const Canvas : TCanvas);
+    procedure   Draw             (const Canvas : TCanvas); override;
   private
     x, y       : integer;
     px         : integer;
     k1, k2, k3 : real;
-    client_width : integer;
-    end;
+  end;
 
     THill = class (TLandscape)
-    constructor Create (const heigh, width : integer) overload;
-    procedure   Draw (const Canvas : TCanvas);
+  public
+    constructor Create overload;
+    procedure   Draw     (const Canvas : TCanvas); override;
     procedure   Draw_Road(const x1, y1, x2, y2: integer; const k : real; const Canvas : TCanvas);
-    procedure   Hill_Move;
   private
     x, y : integer;
-    k : real;
-    client_heigh, client_width : integer;
-    end;
+    k    : real;
+  end;
 
-
+     TSun = class (TLandscape)
+  private
+    x, y, ran_x, ran_y, rad : integer;
+    angle, move_sun_angle   : real;
+    rays                    : real;
+    round_point             : TPoint;
+    procedure   Set_MoveSunAngle    (const Alpha : Real);     function    Get_MoveSunAngle         : Real;
+    procedure   Set_RotatingPoint   (const pnt : TPoint);     function    Get_RotatingPoint        : Tpoint;
+    procedure   Set_Rad             (const rad : Integer);    function    Get_Rad                  : Integer;
+  public
+    constructor Create (const x,  y : integer) overload;
+    procedure   Draw   (const Canvas: TCanvas); override;
+    procedure   Sets;
+  published
+    property    PRotPoint      : Tpoint   read Get_RotatingPoint write Set_RotatingPoint;
+    property    PMoveSunAngle  : Real     read Get_MoveSunAngle  write Set_MoveSunAngle;
+    property    PRad           : Integer  read Get_Rad           write Set_Rad;
+  end;
+    {odjects}
+  var
+    Sun   : TSun;
+    Hill  : THill;
+    Clouds : TClouds;
 
 
 
 implementation
+{TLandscape}
+constructor TLandscape.Create(const client_width, client_heigh : integer);
+    begin
+        self.client_width := client_width;
+        self.client_heigh := client_heigh;
+        Sun      := TSun.Create(1, client_heigh);
 
-{ TClouds }
+        Sun.PRad := 30;
+        Sun.PRotPoint := Point (client_width div 2, Round (0.8*client_heigh));
 
-procedure TClouds.Construct(const ox, oy: integer; const Canvas : TCanvas; const k : real);
+        Hill  := THill.Create;
+        Clouds := TClouds.Create(0,0);
+    end;
+
+procedure   TLandscape.Draw(const Canvas: TCanvas);
+    begin
+        Sun.Draw    (Canvas);
+        Hill.Draw   (Canvas);
+        Clouds.Draw (Canvas);
+    end;
+
+{TClouds}
+procedure   TClouds.Construct(const ox, oy: integer; const Canvas : TCanvas; const k : real);
     var
         x, y : integer;
         i : integer;
@@ -69,16 +107,15 @@ procedure TClouds.Construct(const ox, oy: integer; const Canvas : TCanvas; const
         Canvas.PolyBezierTo([Point (Round(x - 77*k), Round(y - 5*k)), Point (Round(x - 139*k),  y),  Point (ox,  oy)]);
    end;
 
-constructor TClouds.Create(const x, y: integer; const width : integer)  overload;
+constructor TClouds.Create(const x, y: integer) overload;
     begin
         self.x := x;
         self.y := y;
         px := x;
         k1 := 0.5; k2 := 0.55; k3 := 0.7;
-        client_width := width;
     end;
 
-procedure TClouds.Draw(const Canvas: TCanvas);
+procedure   TClouds.Draw(const Canvas: TCanvas);
     var
         Prev_PenColor: TColor;
         Prev_PenWidth : Integer;
@@ -104,22 +141,16 @@ procedure TClouds.Draw(const Canvas: TCanvas);
         Canvas.Pen.Width   := Prev_PenWidth;
     end;
 
-constructor TLandscape.Create(const x, y: integer);
-    begin
-        self.x := x;
-        self.y := y;
-    end;
 
-constructor THill.Create(const heigh, width: integer) overload;
+{THill}
+constructor THill.Create overload;
     begin
-        client_heigh := heigh;
-        client_width := width;
         x := 0;
         k := 1;
         y := round(2.5/5*self.client_heigh);
     end;
 
-procedure THill.Draw(const Canvas: TCanvas);
+procedure   THill.Draw(const Canvas: TCanvas);
     var
         Prev_PenColor, Prev_BrushColor : TColor;
         Prev_PenWidth : Integer;
@@ -149,7 +180,7 @@ procedure THill.Draw(const Canvas: TCanvas);
         Canvas.Pen.Width   := Prev_PenWidth;
     end;
 
-procedure THill.Draw_Road(const x1, y1, x2, y2: integer; const k : real; const Canvas : TCanvas);
+procedure   THill.Draw_Road(const x1, y1, x2, y2: integer; const k : real; const Canvas : TCanvas);
     begin
         Canvas.PolyBezier([Point(Round(1/k*x1), Round(y1-1-k)), Point(x1-2, Round(0.75*client_heigh)),Point(x1 + 230, Round((1/k)*0.6*client_heigh)), Point(Round(k*0.42*client_width), client_heigh)]);
         Canvas.PolyBezier([Point(Round (k*x2), y2), Point(x2-2, Round(0.7*client_heigh)), Point(x2 + 230, Round(k*0.55*client_heigh)), Point(Round((1/k)*0.6*client_width), client_heigh)]);
@@ -160,10 +191,98 @@ procedure THill.Draw_Road(const x1, y1, x2, y2: integer; const k : real; const C
         if (Round (k*x2) - Round(1/k)*x1 > 25) then self.k := self.k - 0.001;
     end;
 
+{TSun}
 
-procedure THill.Hill_Move;
+procedure  TSun.Set_MoveSunAngle (const Alpha : Real);
     begin
+        move_sun_angle := Alpha;
+    end;
 
+function   TSun.Get_MoveSunAngle : Real;
+    begin
+        result := move_sun_angle;
+    end;
+
+procedure  TSun.Set_RotatingPoint   (const pnt : TPoint);
+    begin
+        round_point := pnt;
+    end;
+
+function   TSun.Get_RotatingPoint  : Tpoint;
+    begin
+        result := round_point;
+    end;
+
+procedure TSun.Set_Rad(const rad : Integer);
+    begin
+        self.rad := rad;
+    end;
+
+function  TSun.Get_Rad: Integer;
+    begin
+        result := rad;
+    end;
+
+function    Convert_x (const x, y, xc, yc : integer; const angle : real) : integer;
+    begin
+        result := Round((x-xc)*cos(angle) - (y -yc)*sin(angle)) ;
+    end;
+
+function    Convert_y (const x, y, xc, yc : integer; const angle : real) : integer;
+    begin
+        result := Round((x -xc)*sin(angle) + (y -yc)*cos(angle));
+    end;
+
+constructor TSun.Create (const x,  y : integer) overload;
+    begin
+        randomize;
+        self.x := x;
+        self.y := y;
+        move_sun_angle := 0;
+        angle  := 0;
+        rad    := 45;
+
+    end;
+
+procedure TSun.Sets;
+    begin
+        ran_x := 1 + random(10);
+        ran_y := 1 + random(10);
+        angle := angle + 0.001;
+        move_sun_angle := move_sun_angle + 0.0001;
+    end;
+
+procedure TSun.Draw(const Canvas: TCanvas);
+    var
+        Prev_PenColor, Prev_BrushColor : TColor;
+        Prev_PenWidth : Integer;
+        k, j, new_x, new_y : integer;
+        s, g : real;
+    begin
+        Prev_PenColor   := Canvas.Pen.Color;
+        Prev_BrushColor := Canvas.Brush.Color;
+        Prev_PenWidth   := Canvas.Pen.Width;
+
+        Canvas.Pen.Color    := clYellow;
+        Canvas.Brush.Color  := clYellow;
+        Canvas.Pen.Width := 3;
+
+        TGuitar.RotatedEllipse(x, y, rad, rad, move_sun_angle, round_point, Canvas);
+        new_x := Convert_x (x , y, round_point.x, round_point.y, move_sun_angle) + round_point.x;
+        new_y := Convert_y (x , y, round_point.x, round_point.y, move_sun_angle) + round_point.y;
+        x := new_x; y := new_y;
+        k :=  25; s := 0; g := 2*pi/k;
+        for j := 0 to k-1 do begin
+            Canvas.MoveTo(x+round(rad*cos(s+angle))+round(cos(s+angle)),y+round(rad*sin(s+angle))+round(sin(s)));
+            Canvas.Lineto(x+round((2+0.05*ran_x)*rad*cos(s+angle)),y+round((2+0.05*ran_y)*rad*sin(s+angle)));
+            s := s + g;
+        end;
+
+        self.PMoveSunAngle := self.PMoveSunAngle + 0.0001;
+
+        Canvas.Pen.Color   := Prev_PenColor;
+        Canvas.Brush.Color := Prev_BrushColor;
+        Canvas.Pen.Width   := Prev_PenWidth;
     end;
 
 end.

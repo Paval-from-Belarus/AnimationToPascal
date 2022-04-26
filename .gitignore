@@ -1,3 +1,6 @@
 Win32/
 __history/
 __recovery/
+*.local
+*.identicate
+*.json

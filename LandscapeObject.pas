@@ -150,6 +150,9 @@ procedure THill.Draw(const Canvas: TCanvas);
         Canvas.Pen.Color := $00000040;
         Canvas.Brush.Color := $00000040;
 
+        self.Draw_Road(Round(0.15*client_width), Round(0.48*client_heigh), Round(0.2*client_width), Round(0.47*client_heigh)-1, Canvas);
+
+        Canvas.FloodFill(Round(0.42*client_width)+2, client_heigh, Canvas.Brush.Color, TFillStyle.fsBorder);
 
         Canvas.Pen.Color   := Prev_PenColor;
         Canvas.Brush.Color := Prev_BrushColor;
@@ -158,8 +161,10 @@ procedure THill.Draw(const Canvas: TCanvas);
 
 procedure THill.Draw_Road(const x1, y1, x2, y2: integer; const Canvas : TCanvas);
     begin
-        Canvas.MoveTo(x, y);
-      //  Canvas.PolyBezierTo([Point(), Point(), Point()]);
+        Canvas.MoveTo(x1, y1);
+        Canvas.PolyBezierTo([Point(x1-2, Round(0.75*client_heigh)), Point(x1 + 230, Round(0.6*client_heigh)), Point(Round(0.42*client_width), client_heigh)]);
+        Canvas.MoveTo(x2, y2);
+        Canvas.PolyBezierTo([Point(x2-2, Round(0.7*client_heigh)), Point(x2 + 230, Round(0.55*client_heigh)), Point(Round(0.6*client_width), client_heigh)]);
     end;
 
 end.

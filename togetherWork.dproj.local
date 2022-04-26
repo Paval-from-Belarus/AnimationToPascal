@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.040,D:\Триггеры\Delphi\term_2\togetherWork\togetherWork.dproj=D:\Триггеры\Delphi\Project2.dproj</Transaction>
     <Transaction>1899.12.30 00:00:00.000.411,D:\Триггеры\Delphi\term_2\togetherWork\HumanSet.dfm=D:\Триггеры\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.038,C:\Users\Anastasiya\Documents\GitHub\AnimationToPascal\Unit1.pas=C:\Users\Anastasiya\Documents\GitHub\AnimationToPascal\Landscape.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.569,=C:\Users\Anastasiya\Documents\GitHub\AnimationToPascal\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.040,D:\Триггеры\Delphi\term_2\togetherWork\togetherWork.dproj=D:\Триггеры\Delphi\Project2.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.859,C:\Users\Anastasiya\Documents\GitHub\AnimationToPascal\Landscape.pas=C:\Users\Anastasiya\Documents\GitHub\AnimationToPascal\LandscapeObject.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.411,D:\Триггеры\Delphi\term_2\togetherWork\HumanSet.pas=D:\Триггеры\Delphi\Unit1.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.500,D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas=D:\Триггеры\Delphi\term_2\togetherWork\LimbSet.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.132,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.704,=D:\Триггеры\Delphi\Unit1.pas</Transaction>
   </Transactions>
 </BorlandProject>

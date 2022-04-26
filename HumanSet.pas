@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet;
+  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet, LandscapeObject, SunObject, GuitarObject;
 
 type
   TCharachter = class
@@ -58,6 +58,10 @@ type
     anmWalk: TAnimation;
     anmPlay: TAnimation;
     mainHero: TCharachter;
+    Cloud : TClouds;
+    Sun  : TSun;
+    Guitar : TGuitar;
+    hill   : Thill;
   public
   end;
 
@@ -89,13 +93,13 @@ begin
   neckY := Y;
   bodyLen := defBodyLen;
   scale := 1;
-  leftArm := TArm.Create(-defArmAngle, X, Y);
+  leftArm :=  TArm.Create(-defArmAngle, X, Y);
   RightArm := TArm.Create(defArmAngle, X, Y);
-  leftLeg := TLeg.Create(-defLegAngle, X, Y + bodyLen);
+  leftLeg :=  TLeg.Create(-defLegAngle, X, Y + bodyLen);
   rightLeg := TLeg.Create(defLegAngle, X, Y + bodyLen);
-  neck :=  TLimb.Create(Pi, X, Y, defNeckLen);
-  head := THead.Create(Pi, X, Y - neck.Len, defHeadSize);
-  body := TLimb.Create(0, X, Y, defBodyLen);
+  neck :=     TLimb.Create (Pi, X, Y, defNeckLen);
+  head :=     THead.Create (Pi, X, Y - neck.Len, defHeadSize);
+  body :=     TLimb.Create (0, X, Y, defBodyLen);
 end;
 
 procedure TCharachter.setScale(const scale: Real);
@@ -245,14 +249,26 @@ begin
   Canvas.Pen.Width := 3;
   Canvas.Pen.Color := clBlack;
   mainHero := TCharachter.Create(200, 200);
+  guitar := TGuitar.Create(300, 300);
+  hill := THill.Create(Frames.Height, Frames.Width);
+  guitar.PWidth := 10;
   anmWalk := TAnimation.Create(mainHero, walk);
+
   anmPlay := TAnimation.Create(mainHero, play);
+  Cloud := TClouds.Create(0, 0, Frames.Width);
+  Sun   := TSun.Create(100,100);
 end;
 
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
 begin
   anmWalk.update;
   anmPlay.update;
+  Cloud.Draw(Canvas);
+      Sun.Draw(Canvas);
+  Cloud.Draw(Canvas);
+    hill.Draw(Canvas);
+  Sun.Sets;
+  Cloud.Shift_Clouds;
   mainHero.draw(self.Canvas);
 end;
 
@@ -262,4 +278,3 @@ begin
 end;
 
 end.
-

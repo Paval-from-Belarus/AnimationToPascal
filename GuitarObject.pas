@@ -34,6 +34,8 @@ constructor TGuitar.Create(const x : Integer; const y: Integer);
         self.x := x;
         self.y := y;
         width  := 150;
+        angle := 0;
+
     end;
 
 procedure TGuitar.Set_RotatingPoint(const pnt : TPoint);

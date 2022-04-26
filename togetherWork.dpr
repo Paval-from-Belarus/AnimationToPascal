@@ -3,7 +3,7 @@ program togetherWork;
 uses
   Vcl.Forms,
   HumanSet in 'HumanSet.pas' {Frames},
-  LimbSet in 'LimbSet.pas';
+  LandscapeObject in 'LandscapeObject.pas';
 
 {$R *.res}
 

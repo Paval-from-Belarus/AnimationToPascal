@@ -2,8 +2,12 @@ program togetherWork;
 
 uses
   Vcl.Forms,
-  HumanSet in 'HumanSet.pas' {Frames};
-
+  HumanSet in 'HumanSet.pas' {Frames},
+  LimbSet in 'LimbSet.pas',
+  CharachterSet in 'CharachterSet.pas',
+  AnimationSet in 'AnimationSet.pas',
+  LandscapeObject in 'LandscapeObject.pas',
+  GuitarObject in 'GuitarObject.pas';
 {$R *.res}
 
 begin

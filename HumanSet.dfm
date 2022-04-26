@@ -12,29 +12,14 @@ object Frames: TFrames
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
-  OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
-  object imgMap: TImage
-    Left = 584
-    Top = 192
-    Width = 105
-    Height = 105
-  end
   object pbDrawGrid: TPaintBox
     Left = -6
     Top = 0
-    Width = 785
-    Height = 481
+    Width = 800
+    Height = 600
     OnPaint = pbDrawGridPaint
-  end
-  object btnGo: TButton
-    Left = 600
-    Top = 336
-    Width = 89
-    Height = 33
-    Caption = 'btnGo'
-    TabOrder = 0
   end
   object tmrRender: TTimer
     Enabled = False

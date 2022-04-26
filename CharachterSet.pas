@@ -22,17 +22,22 @@ const
 type
   TPath = array of TPoint;
 
+  TCharachterState = (csProcess, csDone);
+
   TCharachter = class
     procedure draw(const Canvas: TCanvas);
     procedure setPos(const floatX, floatY: Real);
     procedure setScale(const scale: Real);
     procedure setPath(const points: TPath);
     procedure updatePath;
+    procedure setState(const state: TCharachterState);
+    function getState: TCharachterState;
     constructor Create(const X, Y: Integer); overload;
   private
     stopPoints: TPath;
     currPoint: Integer;
     onNext: Boolean;
+    chState: TCharachterState;
   public
     leftArm, rightArm: TLongLimb;
     leftLeg, rightLeg: TLongLimb;
@@ -44,7 +49,7 @@ type
     velocityX, velocityY: Real;
     speed: Real;
     const
-      defVelocity = 0.12;
+      defVelocity = 0.27;
       defArmWidth = 4;
       defArmAngle = Pi / 4;
       defLegAngle = Pi / 8;
@@ -52,6 +57,7 @@ type
       defNeckLen = 3;
       defHeadSize = 15;
     property PATH: TPATH write setPath;
+    property STATE: TCharachterState read getState write setState;
   end;
 
   TAnimationAction = procedure(var stage: Integer; var tick: Real; var hero: TCharachter);
@@ -63,18 +69,20 @@ type
     hero: TCharachter;
     action: TAnimationAction;
   public
-  stage: Integer;
+    stage: Integer;
     procedure update();
   end;
 
 implementation
 //create new entity of TAnimation class
+
 constructor TAnimation.Create(hero: TCharachter; action: TAnimationAction);
 begin
   self.hero := hero;
   self.action := action;
 end;
 //implement action inside TAnimation object
+
 procedure TAnimation.update;
 begin
   action(stage, tick, hero);
@@ -84,6 +92,7 @@ end;
 // That is legs, arms, guitar
 //set default Charachter sizes
 //and other options
+
 constructor TCharachter.Create(const X, Y: Integer);
 begin
   posX := X;
@@ -102,15 +111,18 @@ begin
   velocityX := defVelocity;
   velocityY := defVelocity;
   speed := defVelocity;
-  onNext:= false;
+  onNext := false;
+  chState := csDONE;
 
   guitar := TGuitar.Create(rightArm.midLimb.X, rightArm.midLimb.Y);
   guitar.PRotPoint := Point(rightArm.midLimb.X, rightArm.midLimb.Y);
   guitar.PWidth := defGuitarWidth;
   guitar.PAngle := leftArm.Rotation;
+
 end;
 //set Charachter's sizes according existing scale
 //guitar's scale also refferes to it
+
 procedure TCharachter.setScale(const scale: Real);
 begin
   self.scale := scale;
@@ -153,43 +165,57 @@ end;
 procedure TCharachter.setPath(const points: TPath);
 begin
   stopPoints := points;
-  currPoint:= Low(points);
-  onNext:= false;
+  currPoint := Low(points);
+  onNext := false;
+  chState := csProcess;
 end;
 //Implement Charachter moving (not completed)
+
 procedure TCharachter.updatePath;
 var
   distance: Real;
 begin
-  if (currPoint <> -1) then
+  if (chState <> csDONE) then
   begin
-    if (head.X <> stopPoints[currPoint].X) and (head.Y <> stopPoints[currPoint].Y) then
+    if not onNext then
     begin
-
+      distance := sqrt(sqr(stopPoints[currPoint].X - posX) + sqr(stopPoints[currPoint].Y - posY));
+      velocityX := (stopPoints[currPoint].X - posX) / distance * Speed;
+      velocityY := (stopPoints[currPoint].Y - posY) / distance * speed;
+      onNext := true;
+    end;
+    if (head.X <> stopPoints[currPoint].X) or (head.Y <> stopPoints[currPoint].Y) then
+    begin
+      setPos(posX + velocityX, posY + velocityY);
     end
     else
     begin
-       if not onNext then
-       begin
-        distance:= sqrt (  sqr(stopPoints[currPoint].X - posX) + sqr(stopPoints[currPoint].Y - posY) );
-        velocityX :=  (stopPoints[currPoint].X - posX) / distance * Speed;
-        velocityY := (stopPoints[currPoint].Y - posY) / distance * speed;
-        onNext:= false;
-       end;
       if currPoint <> High(stopPoints) then
       begin
-         setPos(posX + velocityX, posY + velocityY);
+        onNext := false;
+        inc(currPoint);
       end
       else
       begin
         currPoint := -1;
         setLength(stopPoints, 0);
+        chState := csDONE;
       end;
     end;
   end;
 end;
 
+procedure TCharachter.setState(const state: TCharachterState);
+begin
+  chState := state;
+end;
+
+function TCharachter.getState: TCharachterState;
+begin
+  Result := chState;
+end;
 //Draw Character on Certain Canvas
+
 procedure TCharachter.draw(const Canvas: TCanvas);
 begin
   with Canvas do

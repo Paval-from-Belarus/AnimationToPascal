@@ -1,16 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.955,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.704,=D:\Триггеры\Delphi\Unit1.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.411,D:\Триггеры\Delphi\Unit1.pas=D:\Триггеры\Delphi\term_2\togetherWork\HumanSet.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.132,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.022,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.411,D:\Триггеры\Delphi\Unit1.dfm=D:\Триггеры\Delphi\term_2\togetherWork\HumanSet.dfm</Transaction>
     <Transaction>1899.12.30 00:00:00.000.500,D:\Триггеры\Delphi\term_2\togetherWork\LimbSet.pas=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.411,D:\Триггеры\Delphi\Unit1.pas=D:\Триггеры\Delphi\term_2\togetherWork\HumanSet.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.040,D:\Триггеры\Delphi\Project2.dproj=D:\Триггеры\Delphi\term_2\togetherWork\togetherWork.dproj</Transaction>
-    <Transaction>2022.04.26 16:06:17.022,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
-    <Transaction>2022.04.26 16:11:45.669,D:\Триггеры\Delphi\term_2\togetherWork\CharachterSet.pas=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
-    <Transaction>2022.04.26 17:41:52.268,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
-    <Transaction>2022.04.26 17:44:16.387,D:\Триггеры\Delphi\term_2\togetherWork\AnimationSet.pas=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.669,D:\Триггеры\Delphi\term_2\togetherWork\CharachterSet.pas=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.387,D:\Триггеры\Delphi\term_2\togetherWork\AnimationSet.pas=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.268,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.955,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>2022.04.26 21:14:09.696,=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
+    <Transaction>2022.04.26 21:14:23.500,D:\Триггеры\Delphi\term_2\togetherWork\LandscapeObject.pas=D:\Триггеры\Delphi\term_2\togetherWork\Unit1.pas</Transaction>
   </Transactions>
 </BorlandProject>

@@ -83,7 +83,7 @@ procedure TSun.Sets;
         ran_x := 1 + random(10);
         ran_y := 1 + random(10);
         angle := angle + 0.001;
-        move_sun_angle := move_sun_angle + 0.0001;
+        move_sun_angle := move_sun_angle + 0.00001;
     end;
 
 procedure TSun.Draw(const Canvas: TCanvas);

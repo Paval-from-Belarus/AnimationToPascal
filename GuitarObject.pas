@@ -1,4 +1,4 @@
-unit GuitarObject;
+п»їunit GuitarObject;
 
 interface
 uses
@@ -138,7 +138,7 @@ procedure   TGuitar.Draw (const Canvas: TCanvas);
         h_c  :=  Round (0.08*heigh);
 
         Canvas.Pen.Width := 3;
-        Canvas.Pen.Color    := $00000040;
+        Canvas.Pen.Color    := clBlack;
         Canvas.Brush.Color  := $00000040;
 
         RotateRectangle (x, y - h_g, x + w_g, y + h_g, angle, round_point, Canvas);
@@ -146,7 +146,7 @@ procedure   TGuitar.Draw (const Canvas: TCanvas);
 
         RotatedEllipse((2*x - w_2 - w_1) div 2, (y), (w_1) div 2, (h_1 ) div 2, angle, round_point, Canvas);
 
-        Canvas.Pen.Color    := $00000040;
+        Canvas.Pen.Color    := clBlack;
         Canvas.Brush.Color  := $00000040;
         RotatedEllipse((x - w_2+x) div 2, (y - h_2 div 2+y + h_2 div 2)div 2 , (x-(x - w_2)) div 2 , (y + h_2 div 2-(y - h_2 div 2)) div 2, angle, round_point, Canvas);
         Canvas.Pen.Color    := clBlack;
@@ -206,8 +206,7 @@ function TransformPoint(X, Y: Double): TPoint;
         for i := 0 to 5 do Dot_Arr[i + 6] := Point(CX2 - Dot_Arr[i].X, CY2 - Dot_Arr[i].Y);
         Dot_Arr[12] := Dot_Arr[0];
         Canvas.PolyBezier(Dot_Arr);
-        {Закрасить области в окрестности центральной точки}
-    //    Canvas.FloodFill (cx + Round(0.5*a), cy + Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
+      //    Canvas.FloodFill (cx + Round(0.5*a), cy + Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
     //    Canvas.FloodFill (cx + Round(0.5*a), cy - Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
     //   Canvas.FloodFill (cx - Round(0.5*a), cy + Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
      //   Canvas.FloodFill (cx - Round(0.5*a), cy - Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);

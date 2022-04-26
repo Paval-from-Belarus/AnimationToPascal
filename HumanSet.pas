@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet, GuitarObject, SunObject,
+  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet, GuitarObject,
   MmSystem, LandscapeObject, CharachterSet, AnimationSet, System.Types;
 
 type
@@ -23,16 +23,14 @@ type
     anmDestroyer: TAnimation;
     anmVictory: TAnimation;
     mainHero: TCharachter;
+    Landscape : TLandscape;
 
-    hill: THill;
-    cloud: TClouds;
-    sun: TSun;
-
+    pathWay: TPath;
     repeatStage: Boolean;
     ElapsedTime: Cardinal;
     const
-      duration = 57 * 1000;
-      addtionalTime = 7 * 1000;
+      duration = 54 * 1000;
+      addtionalTime = 8 * 1000;
   end;
 
 var
@@ -58,12 +56,16 @@ begin
 
   PlaySound('HeroTheme.wav', 0, SND_FILENAME or SND_ASYNC or SND_LOOP);
 
-  sun := TSun.Create(100, 100);
-  cloud := TClouds.Create(0, 0, Frames.Width);
-  hill := THill.Create(Frames.Height, Frames.Width);
-
+  Landscape := TLandscape.Create(Frames.Width, Frames.Height);
   repeatStage := false;
   ElapsedTime := 0;
+
+  setLength(pathWay, 4);
+  pathWay[0] := Point(200, 250);
+  pathWay[1] := Point(350, 275);
+  pathWay[2] := Point(430, 325);
+  pathWay[3] := Point(520, 390);
+  mainHero.PATH := pathWay;
 end;
 
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
@@ -71,8 +73,8 @@ const
   scalable = 0.0002;
   borderY = 375;
 begin
-  Sun.Sets;
-  Cloud.Shift_Clouds;
+ // Sun.Sets;
+//  Cloud.Shift_Clouds;
   inc(ElapsedTime, tmrRender.Interval);
   if ElapsedTime < duration then
   begin
@@ -80,9 +82,10 @@ begin
     anmTremor.update;
     with mainHero do
     begin
-      if posY < borderY then
+      if STATE <> csDONE then
       begin
-        setPos(posX + velocityX, posY + velocityY);
+        updatePath;
+       // setPos(posX + velocityX, posY + velocityY);
         setScale(scale + scalable);
         anmWalk.update
       end
@@ -96,7 +99,7 @@ begin
     if anmDestroyer.stage < 2 then
     begin
       anmDestroyer.update;
-      PlaySound(0, 0, 0);
+      PlaySound(nil, 0, 0);
     end
     else
     begin
@@ -119,9 +122,7 @@ begin
     with mainHero do
       setPos(posX + velocityX * 3, posY);
   end;
-  Sun.Draw(Canvas);
-  Cloud.Draw(Canvas);
-  hill.Draw(Canvas);
+    Landscape.Draw(Canvas);
   mainHero.draw(Canvas);
 end;
 

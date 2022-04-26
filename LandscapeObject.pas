@@ -22,7 +22,7 @@ uses
     procedure   Shift_Clouds;
   private
     x, y       : integer;
-    ox         : integer;
+    px         : integer;
     k1, k2, k3 : real;
     client_width : integer;
     end;
@@ -30,18 +30,13 @@ uses
     THill = class (TLandscape)
     constructor Create (const heigh, width : integer) overload;
     procedure   Draw (const Canvas : TCanvas);
-    procedure   Construct (const ox, oy : integer; const Canvas : TCanvas);
+    procedure   Draw_Road(const x1, y1, x2, y2: integer; const Canvas : TCanvas);
 
   private
     x, y : integer;
     client_heigh, client_width : integer;
     end;
 
-
-
-    TRoad = class (TLandscape)
-
-    end;
 
 
 
@@ -71,13 +66,13 @@ procedure TClouds.Construct(const ox, oy: integer; const Canvas : TCanvas; const
         x := x + Round(49*k); y := y + Round(67*k);
         Canvas.MoveTo (x, y);
         Canvas.PolyBezierTo([Point (Round(x - 77*k), Round(y - 5*k)), Point (Round(x - 139*k),  y),  Point (ox,  oy)]);
-    end;
+   end;
 
 constructor TClouds.Create(const x, y: integer; const width : integer)  overload;
     begin
         self.x := x;
         self.y := y;
-        ox := x;
+        px := x;
         k1 := 0.5; k2 := 0.55; k3 := 0.7;
         client_width := width;
     end;
@@ -92,13 +87,18 @@ procedure TClouds.Draw(const Canvas: TCanvas);
 
         Canvas.Pen.Color := clBlue;
         Canvas.Pen.Width := 1;
-
-
-        self.Construct(x+40,  y+100,  Canvas, k1);
-        self.Construct(x+240, y+140, Canvas,  k2);
-        self.Construct(x+500, y+120, Canvas,  k3);
-
-
+        self.Construct(px+client_width div 20,  y + 100, Canvas, k1);
+        self.Construct(px+client_width div 3, y+140, Canvas, k2);
+        self.Construct(px+Round(client_width / 1.6), y+120, Canvas, k3);
+        inc(px);
+        self.Construct(x -Round (0.3*client_width),    y+145, Canvas, k1);
+        self.Construct(x -Round (0.6*client_width),  y+125, Canvas, k3);
+        self.Construct(x -Round (client_width),  y+110, Canvas, k2);
+        inc (x);
+        if (px = client_width) then
+          px := -x;
+        if (x -Round (client_width)  = client_width) then
+          x := -px;
         Canvas.Pen.Color   := Prev_PenColor;
         Canvas.Pen.Width   := Prev_PenWidth;
     end;
@@ -109,11 +109,6 @@ procedure TClouds.Shift_Clouds;
     var
         x2 : integer;
     begin
-        x := x + 2;
-        if (x >= client_width div 4) then begin
-            if (x2 < ox div 2) then x2 := ox;
-            x2 := x2 + 1;
-        end;
     end;
 
 { TLandscape }
@@ -125,31 +120,6 @@ constructor TLandscape.Create(const x, y: integer);
     end;
 
 { THill }
-
-procedure THill.Construct(const ox, oy: integer; const Canvas: TCanvas);
-    var
-        x, y : integer;
-    begin
-        x := ox; y := oy;
-        Canvas.MoveTo(x, y);
-        Canvas.PolyBezierTo([Point(x+54, y-100), Point(x+204+client_width div 4, y-80), Point(x+210+client_width div 4, y+40)]);
-
-        x :=  x+150+client_width div 4; y := y-25;
-        Canvas.MoveTo(x, y);
-        Canvas.PolyBezierTo([Point(x+54, y-100), Point(x+204+client_width div 4, y-80), Point(client_width, client_heigh div 2)]);
-
-        x := client_width; y := client_heigh div 2;
-        Canvas.MoveTo(x, y);
-        Canvas.PolyBezierTo([Point(x, y), Point(x, y), Point(client_width, client_heigh)]);
-
-        x := client_width; y := client_heigh;
-        Canvas.MoveTo(x, y);
-        Canvas.PolyBezierTo([Point(x, y), Point(x, y), Point(0, client_heigh)]);
-
-        x := 0; y := client_heigh;
-        Canvas.MoveTo(x, y);
-        Canvas.PolyBezierTo([Point(x, y), Point(x, y), Point(0, client_heigh div 2)]);
-    end;
 
 constructor THill.Create(const heigh, width: integer) overload;
     begin
@@ -168,18 +138,28 @@ procedure THill.Draw(const Canvas: TCanvas);
         Prev_BrushColor := Canvas.Brush.Color;
         Prev_PenWidth   := Canvas.Pen.Width;
 
+        Canvas.Pen.Width := 0;
+        Canvas.Pen.Color := $215a00;
+        Canvas.Brush.Color := $215a00;
+        {Закатный вариант}
+        Canvas.Rectangle(0, client_heigh div 2 + 70, client_width, client_heigh);
+        Canvas.Ellipse  (-10, Round(0.46*client_heigh), Round (client_width*0.56), Round(0.875*client_heigh));
+        Canvas.Ellipse  (Round (client_width*0.48), Round (0.53*client_heigh), client_width, Round(0.875*client_heigh));
 
-        Canvas.Pen.Color   := $00000040;
+        Canvas.Pen.Width := 0;
+        Canvas.Pen.Color := $00000040;
         Canvas.Brush.Color := $00000040;
-        Canvas.Pen.Width   := 1;
 
-        self.Construct(x, y, Canvas);
-
-        Canvas.FloodFill(client_width-100, client_heigh-20, $00000040,TFillStyle.fsSurface);
 
         Canvas.Pen.Color   := Prev_PenColor;
         Canvas.Brush.Color := Prev_BrushColor;
         Canvas.Pen.Width   := Prev_PenWidth;
+    end;
+
+procedure THill.Draw_Road(const x1, y1, x2, y2: integer; const Canvas : TCanvas);
+    begin
+        Canvas.MoveTo(x, y);
+      //  Canvas.PolyBezierTo([Point(), Point(), Point()]);
     end;
 
 end.

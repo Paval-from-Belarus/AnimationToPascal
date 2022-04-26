@@ -16,9 +16,10 @@ type
   public
     constructor Create (const x,  y : integer) overload;
     procedure   Draw   (const Canvas: TCanvas);
+    procedure   Set_Pos           (const x, y  : Integer);
     procedure   RotateRectangle (const x1, y1, x3, y3 : integer; const angle : real; const rot_point : TPoint; const Canvas : TCanvas);
     class procedure   RotatedEllipse  (cx, cy, a, b    : integer; angle : real; const rot_point : TPoint; const Canvas : TCanvas);
-    procedure   Circle          (const rad, x, y : integer; const Canvas : TCanvas);
+    class procedure   Circle          (const rad, x, y : integer; const Canvas : TCanvas);
   published
     property    PRotPoint      : Tpoint   read Get_RotatingPoint write Set_RotatingPoint;
     property    PAngle         : Real     read Get_Angle         write Set_Angle;
@@ -35,7 +36,6 @@ constructor TGuitar.Create(const x : Integer; const y: Integer);
         self.y := y;
         width  := 150;
         angle := 0;
-
     end;
 
 procedure TGuitar.Set_RotatingPoint(const pnt : TPoint);
@@ -61,6 +61,12 @@ function TGuitar.Get_Width: Integer;
 procedure TGuitar.Set_Angle(const Alpha: Real);
     begin
         angle := alpha;
+    end;
+
+procedure TGuitar.Set_Pos(const x, y: Integer);
+    begin
+        self.x := x;
+        self.y := y;
     end;
 
 function TGuitar.Get_Angle: Real;
@@ -194,7 +200,7 @@ function TransformPoint(X, Y: Double): TPoint;
         Canvas.FloodFill (cx - Round(0.5*a), cy - Round(0.5*a), Canvas.Pen.Color, TFillStyle.fsBorder);
     end;
 
-procedure   TGuitar.Circle (const rad, x, y : integer; const Canvas : TCanvas);
+class procedure   TGuitar.Circle (const rad, x, y : integer; const Canvas : TCanvas);
     begin
         Canvas.Ellipse (X-Rad, Y-Rad, X+Rad, Y+Rad);
     end;

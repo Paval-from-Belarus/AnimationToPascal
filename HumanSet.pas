@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet, LandscapeObject, SunObject, GuitarObject;
+  Vcl.StdCtrls, Vcl.ExtCtrls, System.Math, LimbSet, LandscapeObject, GuitarObject;
 
 type
   TCharachter = class
@@ -58,10 +58,7 @@ type
     anmWalk: TAnimation;
     anmPlay: TAnimation;
     mainHero: TCharachter;
-    Cloud : TClouds;
-    Sun  : TSun;
-    Guitar : TGuitar;
-    hill   : Thill;
+    Landscape : TLandscape;
   public
   end;
 
@@ -249,12 +246,9 @@ begin
  Canvas.Pen.Width := 3;
  Canvas.Pen.Color := clBlack;
  mainHero := TCharachter.Create(200, 200);
- hill := THill.Create(Frames.Height, Frames.Width);
  anmWalk := TAnimation.Create(mainHero, walk);
  anmPlay := TAnimation.Create(mainHero, play);
- Cloud := TClouds.Create(0, 0, Frames.Width);
- Sun   := TSun.Create(100,100);
- guitar := Tguitar.Create (100, 100);
+ Landscape := TLandscape.Create(Frames.Width, Frames.Height);
 end;
 
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
@@ -262,8 +256,7 @@ var
   Width : integer;
   Color : TColor;
 begin
- CLOUD.Draw(cANVAS);
- hill.Draw(Canvas);
+ Landscape.Draw(Canvas);
  anmWalk.update;
  anmPlay.update;
  mainHero.draw(self.Canvas);

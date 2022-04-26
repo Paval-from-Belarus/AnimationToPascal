@@ -2,8 +2,8 @@ object Frames: TFrames
   Left = 0
   Top = 0
   Caption = 'Frames'
-  ClientHeight = 379
-  ClientWidth = 618
+  ClientHeight = 638
+  ClientWidth = 1351
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,10 +24,10 @@ object Frames: TFrames
     Margins.Bottom = 2
   end
   object pbDrawGrid: TPaintBox
-    Left = -5
+    Left = -1
     Top = 0
-    Width = 628
-    Height = 385
+    Width = 1322
+    Height = 329
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2

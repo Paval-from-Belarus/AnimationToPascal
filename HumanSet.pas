@@ -245,31 +245,28 @@ end;
 
 procedure TFrames.FormCreate(Sender: TObject);
 begin
-  tmrRender.Enabled := true;
-  Canvas.Pen.Width := 3;
-  Canvas.Pen.Color := clBlack;
-  mainHero := TCharachter.Create(200, 200);
-  guitar := TGuitar.Create(300, 300);
-  hill := THill.Create(Frames.Height, Frames.Width);
-  guitar.PWidth := 10;
-  anmWalk := TAnimation.Create(mainHero, walk);
-
-  anmPlay := TAnimation.Create(mainHero, play);
-  Cloud := TClouds.Create(0, 0, Frames.Width);
-  Sun   := TSun.Create(100,100);
+ tmrRender.Enabled := true;
+ Canvas.Pen.Width := 3;
+ Canvas.Pen.Color := clBlack;
+ mainHero := TCharachter.Create(200, 200);
+ hill := THill.Create(Frames.Height, Frames.Width);
+ anmWalk := TAnimation.Create(mainHero, walk);
+ anmPlay := TAnimation.Create(mainHero, play);
+ Cloud := TClouds.Create(0, 0, Frames.Width);
+ Sun   := TSun.Create(100,100);
+ guitar := Tguitar.Create (100, 100);
 end;
 
 procedure TFrames.pbDrawGridPaint(Sender: TObject);
+var
+  Width : integer;
+  Color : TColor;
 begin
-  anmWalk.update;
-  anmPlay.update;
-  Cloud.Draw(Canvas);
-      Sun.Draw(Canvas);
-  Cloud.Draw(Canvas);
-    hill.Draw(Canvas);
-  Sun.Sets;
-  Cloud.Shift_Clouds;
-  mainHero.draw(self.Canvas);
+ CLOUD.Draw(cANVAS);
+ hill.Draw(Canvas);
+ anmWalk.update;
+ anmPlay.update;
+ mainHero.draw(self.Canvas);
 end;
 
 procedure TFrames.tmrRenderTimer(Sender: TObject);

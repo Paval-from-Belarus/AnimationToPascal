@@ -19,7 +19,6 @@ uses
     constructor Create           (const x, y : integer; const width : integer)  overload;
     procedure   Construct        (const ox, oy : integer; const Canvas : TCanvas; const k : real);
     procedure   Draw             (const Canvas : TCanvas);
-    procedure   Shift_Clouds;
   private
     x, y       : integer;
     px         : integer;
@@ -30,12 +29,14 @@ uses
     THill = class (TLandscape)
     constructor Create (const heigh, width : integer) overload;
     procedure   Draw (const Canvas : TCanvas);
-    procedure   Draw_Road(const x1, y1, x2, y2: integer; const Canvas : TCanvas);
-
+    procedure   Draw_Road(const x1, y1, x2, y2: integer; const k : real; const Canvas : TCanvas);
+    procedure   Hill_Move;
   private
     x, y : integer;
+    k : real;
     client_heigh, client_width : integer;
     end;
+
 
 
 
@@ -103,29 +104,18 @@ procedure TClouds.Draw(const Canvas: TCanvas);
         Canvas.Pen.Width   := Prev_PenWidth;
     end;
 
-
-
-procedure TClouds.Shift_Clouds;
-    var
-        x2 : integer;
-    begin
-    end;
-
-{ TLandscape }
-
 constructor TLandscape.Create(const x, y: integer);
     begin
         self.x := x;
         self.y := y;
     end;
 
-{ THill }
-
 constructor THill.Create(const heigh, width: integer) overload;
     begin
         client_heigh := heigh;
         client_width := width;
         x := 0;
+        k := 1;
         y := round(2.5/5*self.client_heigh);
     end;
 
@@ -138,10 +128,11 @@ procedure THill.Draw(const Canvas: TCanvas);
         Prev_BrushColor := Canvas.Brush.Color;
         Prev_PenWidth   := Canvas.Pen.Width;
 
-        Canvas.Pen.Width := 0;
+        Canvas.Pen.Width := 2;
         Canvas.Pen.Color := $215a00;
         Canvas.Brush.Color := $215a00;
-        {Закатный вариант}
+
+
         Canvas.Rectangle(0, client_heigh div 2 + 70, client_width, client_heigh);
         Canvas.Ellipse  (-10, Round(0.46*client_heigh), Round (client_width*0.56), Round(0.875*client_heigh));
         Canvas.Ellipse  (Round (client_width*0.48), Round (0.53*client_heigh), client_width, Round(0.875*client_heigh));
@@ -150,21 +141,29 @@ procedure THill.Draw(const Canvas: TCanvas);
         Canvas.Pen.Color := $00000040;
         Canvas.Brush.Color := $00000040;
 
-        self.Draw_Road(Round(0.15*client_width), Round(0.48*client_heigh), Round(0.2*client_width), Round(0.47*client_heigh)-1, Canvas);
-
-        Canvas.FloodFill(Round(0.42*client_width)+2, client_heigh, Canvas.Brush.Color, TFillStyle.fsBorder);
+        self.Draw_Road  (Round(0.15*client_width), Round(0.48*client_heigh), Round(0.2*client_width), Round(0.47*client_heigh)-1, k, Canvas);
+        Canvas.FloodFill(Round(0.42*client_width), client_heigh-65,$00000040, fsBorder);
 
         Canvas.Pen.Color   := Prev_PenColor;
         Canvas.Brush.Color := Prev_BrushColor;
         Canvas.Pen.Width   := Prev_PenWidth;
     end;
 
-procedure THill.Draw_Road(const x1, y1, x2, y2: integer; const Canvas : TCanvas);
+procedure THill.Draw_Road(const x1, y1, x2, y2: integer; const k : real; const Canvas : TCanvas);
     begin
-        Canvas.MoveTo(x1, y1);
-        Canvas.PolyBezierTo([Point(x1-2, Round(0.75*client_heigh)), Point(x1 + 230, Round(0.6*client_heigh)), Point(Round(0.42*client_width), client_heigh)]);
-        Canvas.MoveTo(x2, y2);
-        Canvas.PolyBezierTo([Point(x2-2, Round(0.7*client_heigh)), Point(x2 + 230, Round(0.55*client_heigh)), Point(Round(0.6*client_width), client_heigh)]);
+        Canvas.PolyBezier([Point(Round(1/k*x1), Round(y1-1-k)), Point(x1-2, Round(0.75*client_heigh)),Point(x1 + 230, Round((1/k)*0.6*client_heigh)), Point(Round(k*0.42*client_width), client_heigh)]);
+        Canvas.PolyBezier([Point(Round (k*x2), y2), Point(x2-2, Round(0.7*client_heigh)), Point(x2 + 230, Round(k*0.55*client_heigh)), Point(Round((1/k)*0.6*client_width), client_heigh)]);
+        Canvas.MoveTo(Round(k*0.42*client_width), client_heigh);
+        Canvas.LineTo(Round((1/k)*0.6*client_width),  client_heigh);
+        Canvas.MoveTo(Round(1/k)*x1, y1);
+        Canvas.LineTo(Round (k*x2), y2);
+        if (Round (k*x2) - Round(1/k)*x1 > 25) then self.k := self.k - 0.001;
+    end;
+
+
+procedure THill.Hill_Move;
+    begin
+
     end;
 
 end.

@@ -2,34 +2,47 @@ object Frames: TFrames
   Left = 0
   Top = 0
   Caption = 'Frames'
-  ClientHeight = 482
-  ClientWidth = 787
+  ClientHeight = 379
+  ClientWidth = 618
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -9
   Font.Name = 'Tahoma'
   Font.Style = []
   OnCreate = FormCreate
-  TextHeight = 13
+  PixelsPerInch = 96
+  TextHeight = 11
   object imgMap: TImage
-    Left = 584
-    Top = 192
-    Width = 105
-    Height = 105
+    Left = 467
+    Top = 154
+    Width = 84
+    Height = 84
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
   end
   object pbDrawGrid: TPaintBox
-    Left = -6
+    Left = -5
     Top = 0
-    Width = 785
-    Height = 481
+    Width = 628
+    Height = 385
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
     OnPaint = pbDrawGridPaint
   end
   object btnGo: TButton
-    Left = 600
-    Top = 336
-    Width = 89
-    Height = 33
+    Left = 480
+    Top = 269
+    Width = 71
+    Height = 26
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
     Caption = 'btnGo'
     TabOrder = 0
   end
